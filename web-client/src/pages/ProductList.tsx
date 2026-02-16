@@ -5,6 +5,7 @@ import { DenseTable } from '../components/DenseTable';
 import { Button, Group, Title, Modal, TextInput, NumberInput, Select, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
+import { notifications } from '@mantine/notifications';
 
 interface Product {
   id: string;
@@ -47,6 +48,10 @@ export function ProductList() {
       cost_price: 0,
       description: '',
     },
+    validate: {
+        name: (value) => (value.length < 2 ? 'Name must have at least 2 letters' : null),
+        sku: (value) => (value.length < 2 ? 'SKU must have at least 2 letters' : null),
+    },
   });
 
   const mutation = useMutation({
@@ -55,35 +60,53 @@ export function ProductList() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      notifications.show({
+        title: 'Success',
+        message: 'Product created successfully',
+        color: 'green',
+      });
       close();
       form.reset();
     },
+    onError: (error: any) => {
+        notifications.show({
+            title: 'Error',
+            message: error.response?.data?.error || 'Failed to create product',
+            color: 'red',
+        });
+    }
   });
 
   if (isLoading) return <div>Loading...</div>;
 
   return (
-    <div>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Group justify="space-between" mb="md">
-        <Title order={2}>Products</Title>
-        <Button onClick={open}>New Product</Button>
+        <Title order={3}>Item List</Title>
+        <Button onClick={open}>New Item</Button>
       </Group>
-      <DenseTable data={products || []} columns={columns} />
+      
+      <div style={{ flex: 1, overflow: 'auto' }}>
+        <DenseTable data={products || []} columns={columns} />
+      </div>
 
-      <Modal opened={opened} onClose={close} title="Create New Product">
+      <Modal opened={opened} onClose={close} title="New Item">
         <form onSubmit={form.onSubmit((values) => mutation.mutate(values))}>
             <Stack>
-                <TextInput label="Name" required {...form.getInputProps('name')} />
-                <TextInput label="SKU" required {...form.getInputProps('sku')} />
+                <TextInput label="Item Name" required {...form.getInputProps('name')} />
+                <TextInput label="SKU / Part Number" required {...form.getInputProps('sku')} />
                 <Select 
                     label="Unit of Measure" 
                     data={['UNIT', 'SQ_FT', 'KG', 'PIECE', 'METER', 'LITER']} 
                     {...form.getInputProps('unit_of_measure')} 
                 />
-                <NumberInput label="Price" prefix="$" {...form.getInputProps('price')} />
-                <NumberInput label="Cost Price" prefix="$" {...form.getInputProps('cost_price')} />
+                <NumberInput label="Sales Price" prefix="$" {...form.getInputProps('price')} />
+                <NumberInput label="Cost" prefix="$" {...form.getInputProps('cost_price')} />
                 <TextInput label="Description" {...form.getInputProps('description')} />
-                <Button type="submit" loading={mutation.isPending}>Create</Button>
+                <Group justify="flex-end" mt="md">
+                    <Button variant="default" onClick={close}>Cancel</Button>
+                    <Button type="submit" loading={mutation.isPending}>Save Item</Button>
+                </Group>
             </Stack>
         </form>
       </Modal>
