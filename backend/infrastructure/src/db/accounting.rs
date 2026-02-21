@@ -27,7 +27,7 @@ impl AccountingService for PostgresAccountingRepository {
             r#"
             INSERT INTO invoices (tenant_id, customer_id, sales_order_id, invoice_number, date, due_date, total_amount, status)
             VALUES ($1, $2, $3, $4, $5, $6, $7, 'DRAFT')
-            RETURNING id, tenant_id, customer_id, sales_order_id, invoice_number, date, due_date, status as "status: InvoiceStatus", total_amount, amount_paid, created_at, updated_at
+            RETURNING id, tenant_id, customer_id, sales_order_id, invoice_number, date, due_date, status, total_amount, amount_paid, created_at, updated_at
             "#
         )
         .bind(tenant_id)
@@ -55,7 +55,7 @@ impl AccountingService for PostgresAccountingRepository {
             r#"
             INSERT INTO payments (tenant_id, invoice_id, amount, date, method, reference)
             VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING id, tenant_id, invoice_id, amount, date, method as "method: smart_erp_core::models::accounting::PaymentMethod", reference, created_at, updated_at
+            RETURNING id, tenant_id, invoice_id, amount, date, method, reference, created_at, updated_at
             "#
         )
         .bind(tenant_id)

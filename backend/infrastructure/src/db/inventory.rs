@@ -31,7 +31,7 @@ impl InventoryService for PostgresInventoryRepository {
             INSERT INTO inventory_transactions 
             (tenant_id, product_id, quantity, transaction_type, reference_id, notes)
             VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING id, tenant_id, product_id, quantity, transaction_type as "transaction_type: smart_erp_core::models::inventory::TransactionType", reference_id, notes, created_at
+            RETURNING id, tenant_id, product_id, quantity, transaction_type, reference_id, notes, created_at
             "#
         )
         .bind(tenant_id)

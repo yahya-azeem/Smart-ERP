@@ -44,7 +44,7 @@ pub struct AuthResponse {
     pub user: User,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     pub sub: Uuid, // User ID
     pub tenant_id: Uuid,

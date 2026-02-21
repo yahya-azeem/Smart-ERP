@@ -72,7 +72,7 @@ impl ManufacturingService for PostgresManufacturingRepository {
             r#"
             INSERT INTO work_orders (tenant_id, recipe_id, quantity, start_date, status)
             VALUES ($1, $2, $3, $4, 'PLANNED')
-            RETURNING id, tenant_id, recipe_id, quantity, status as "status: WorkOrderStatus", start_date, end_date, created_at, updated_at
+            RETURNING id, tenant_id, recipe_id, quantity, status, start_date, end_date, created_at, updated_at
             "#
         )
         .bind(tenant_id)
@@ -95,7 +95,7 @@ impl ManufacturingService for PostgresManufacturingRepository {
 
         let work_order = sqlx::query_as::<_, WorkOrder>(
             r#"
-            SELECT id, tenant_id, recipe_id, quantity, status as "status: WorkOrderStatus", start_date, end_date, created_at, updated_at
+            SELECT id, tenant_id, recipe_id, quantity, status, start_date, end_date, created_at, updated_at
             FROM work_orders
             WHERE id = $1 AND tenant_id = $2
             FOR UPDATE
@@ -120,7 +120,7 @@ impl ManufacturingService for PostgresManufacturingRepository {
             UPDATE work_orders
             SET status = 'COMPLETED', end_date = CURRENT_DATE, updated_at = NOW()
             WHERE id = $1
-            RETURNING id, tenant_id, recipe_id, quantity, status as "status: WorkOrderStatus", start_date, end_date, created_at, updated_at
+            RETURNING id, tenant_id, recipe_id, quantity, status, start_date, end_date, created_at, updated_at
             "#
         )
         .bind(work_order_id)

@@ -1,10 +1,12 @@
 mod handlers;
 mod state;
 mod error;
+mod middleware;
 
 use axum::{
     routing::{get, post},
     Router,
+    middleware as axum_middleware,
 };
 use sqlx::postgres::PgPoolOptions;
 use std::net::SocketAddr;
@@ -13,8 +15,33 @@ use tower_http::cors::{CorsLayer, Any};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use state::AppState;
 
+#[cfg(target_os = "openbsd")]
+mod openbsd {
+    use pledge::pledge;
+    use unveil::unveil;
+
+    pub fn secure_process() {
+        // OpenBSD Security Primitives
+        if let Err(e) = unveil("/etc/ssl", "r") { eprintln!("unveil /etc/ssl failed: {}", e); }
+        if let Err(e) = unveil("/etc/resolv.conf", "r") { eprintln!("unveil /etc/resolv.conf failed: {}", e); }
+        if let Err(e) = unveil("", "") { eprintln!("unveil lock failed: {}", e); }
+
+        match pledge("stdio inet rpath dns", None) {
+            Ok(_) => println!("OpenBSD pledge() active: stdio inet rpath dns"),
+            Err(e) => {
+                eprintln!("Failed to pledge: {}", e);
+                std::process::exit(1);
+            }
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() {
+    // Activate OpenBSD Security
+    #[cfg(target_os = "openbsd")]
+    openbsd::secure_process();
+
     // Initialize tracing
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
@@ -35,12 +62,14 @@ async fn main() {
 
     let state = AppState { pool, jwt_secret };
 
-    // Routes
-    let app = Router::new()
+    // Public Routes (No Auth)
+    let public_routes = Router::new()
         .route("/", get(root))
-        // Auth
         .route("/api/auth/login", post(handlers::auth::login))
-        .route("/api/auth/register", post(handlers::auth::register))
+        .route("/api/auth/register", post(handlers::auth::register));
+
+    // Protected Routes (Require Auth + Tenant Match)
+    let protected_routes = Router::new()
         // Inventory
         .route("/api/products", get(handlers::inventory::list_products).post(handlers::inventory::create_product))
         // Purchasing
@@ -60,6 +89,12 @@ async fn main() {
         .route("/api/accounting/invoices", post(handlers::accounting::create_invoice))
         .route("/api/accounting/payments", post(handlers::accounting::record_payment))
         
+        .route_layer(axum_middleware::from_fn_with_state(state.clone(), middleware::auth::auth_middleware));
+
+    // Merge Routes
+    let app = Router::new()
+        .merge(public_routes)
+        .merge(protected_routes)
         .layer(CorsLayer::new()
             .allow_origin(Any)
             .allow_methods(Any)

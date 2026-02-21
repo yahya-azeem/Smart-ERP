@@ -1,0 +1,21 @@
+#!/bin/ksh
+
+daemon="/usr/local/bin/smart-erp"
+daemon_user="_smarterp"
+
+. /etc/rc.d/rc.subr
+
+rc_bg=YES
+rc_reload=NO
+
+rc_start() {
+    # Set environment variables securely
+    # Ideally load from an encrypted file or /etc/smarterp.conf
+    export DATABASE_URL="postgres://_smarterp:password@127.0.0.1:5432/smart_erp_rust"
+    export JWT_SECRET="changeme_in_production"
+    export RUST_LOG="info"
+    
+    ${rcexec} "${daemon}"
+}
+
+rc_cmd $1

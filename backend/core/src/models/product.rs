@@ -11,8 +11,10 @@ pub enum UnitOfMeasure {
     #[strum(serialize = "UNIT")]
     Unit,
     #[strum(serialize = "SQ_FT")]
+    #[sqlx(rename = "SQ_FT")]
     SquareFeet,
     #[strum(serialize = "KG")]
+    #[sqlx(rename = "KG")]
     Kilogram,
     #[strum(serialize = "PIECE")]
     Piece,

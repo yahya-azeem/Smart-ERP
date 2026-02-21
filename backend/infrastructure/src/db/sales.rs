@@ -59,7 +59,7 @@ impl SalesService for PostgresSalesRepository {
             r#"
             INSERT INTO sales_orders (tenant_id, customer_id, order_number, date, total_amount, status)
             VALUES ($1, $2, $3, $4, $5, 'DRAFT')
-            RETURNING id, tenant_id, customer_id, order_number, date, status as "status: SalesOrderStatus", total_amount, created_at, updated_at
+            RETURNING id, tenant_id, customer_id, order_number, date, status, total_amount, created_at, updated_at
             "#
         )
         .bind(tenant_id)
@@ -97,7 +97,7 @@ impl SalesService for PostgresSalesRepository {
 
         let order = sqlx::query_as::<_, SalesOrder>(
             r#"
-            SELECT id, tenant_id, customer_id, order_number, date, status as "status: SalesOrderStatus", total_amount, created_at, updated_at
+            SELECT id, tenant_id, customer_id, order_number, date, status, total_amount, created_at, updated_at
             FROM sales_orders
             WHERE id = $1 AND tenant_id = $2
             FOR UPDATE
@@ -122,7 +122,7 @@ impl SalesService for PostgresSalesRepository {
             UPDATE sales_orders
             SET status = 'SHIPPED', updated_at = NOW()
             WHERE id = $1
-            RETURNING id, tenant_id, customer_id, order_number, date, status as "status: SalesOrderStatus", total_amount, created_at, updated_at
+            RETURNING id, tenant_id, customer_id, order_number, date, status, total_amount, created_at, updated_at
             "#
         )
         .bind(order_id)

@@ -25,7 +25,7 @@ impl ProductService for PostgresProductRepository {
             r#"
             INSERT INTO products (tenant_id, name, sku, description, unit_of_measure, price, cost_price)
             VALUES ($1, $2, $3, $4, $5, $6, $7)
-            RETURNING id, tenant_id, name, sku, description, unit_of_measure as "unit_of_measure: smart_erp_core::models::product::UnitOfMeasure", price, cost_price, stock_quantity, created_at, updated_at
+            RETURNING id, tenant_id, name, sku, description, unit_of_measure, price, cost_price, stock_quantity, created_at, updated_at
             "#
         )
         .bind(tenant_id)
@@ -45,7 +45,7 @@ impl ProductService for PostgresProductRepository {
     async fn list_products(&self, tenant_id: Uuid) -> Result<Vec<Product>, Error> {
         let records = sqlx::query_as::<_, Product>(
             r#"
-            SELECT id, tenant_id, name, sku, description, unit_of_measure as "unit_of_measure: smart_erp_core::models::product::UnitOfMeasure", price, cost_price, stock_quantity, created_at, updated_at
+            SELECT id, tenant_id, name, sku, description, unit_of_measure, price, cost_price, stock_quantity, created_at, updated_at
             FROM products
             WHERE tenant_id = $1
             ORDER BY name
@@ -62,7 +62,7 @@ impl ProductService for PostgresProductRepository {
     async fn get_product(&self, tenant_id: Uuid, product_id: Uuid) -> Result<Product, Error> {
         let record = sqlx::query_as::<_, Product>(
             r#"
-            SELECT id, tenant_id, name, sku, description, unit_of_measure as "unit_of_measure: smart_erp_core::models::product::UnitOfMeasure", price, cost_price, stock_quantity, created_at, updated_at
+            SELECT id, tenant_id, name, sku, description, unit_of_measure, price, cost_price, stock_quantity, created_at, updated_at
             FROM products
             WHERE id = $1 AND tenant_id = $2
             "#

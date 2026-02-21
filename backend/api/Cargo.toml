@@ -19,3 +19,7 @@ sqlx = { workspace = true }
 uuid = { workspace = true }
 dotenvy = { workspace = true }
 jsonwebtoken = { workspace = true }
+
+[target.'cfg(target_os = "openbsd")'.dependencies]
+pledge = "0.4.2"
+unveil = "0.3.0"

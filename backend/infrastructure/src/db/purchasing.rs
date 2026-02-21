@@ -60,7 +60,7 @@ impl PurchasingService for PostgresPurchasingRepository {
             r#"
             INSERT INTO purchase_orders (tenant_id, supplier_id, order_number, date, total_amount, status)
             VALUES ($1, $2, $3, $4, $5, 'DRAFT')
-            RETURNING id, tenant_id, supplier_id, order_number, date, status as "status: PurchaseOrderStatus", total_amount, created_at, updated_at
+            RETURNING id, tenant_id, supplier_id, order_number, date, status, total_amount, created_at, updated_at
             "#
         )
         .bind(tenant_id)
@@ -98,7 +98,7 @@ impl PurchasingService for PostgresPurchasingRepository {
 
         let order = sqlx::query_as::<_, PurchaseOrder>(
             r#"
-            SELECT id, tenant_id, supplier_id, order_number, date, status as "status: PurchaseOrderStatus", total_amount, created_at, updated_at
+            SELECT id, tenant_id, supplier_id, order_number, date, status, total_amount, created_at, updated_at
             FROM purchase_orders
             WHERE id = $1 AND tenant_id = $2
             FOR UPDATE
@@ -123,7 +123,7 @@ impl PurchasingService for PostgresPurchasingRepository {
             UPDATE purchase_orders
             SET status = 'RECEIVED', updated_at = NOW()
             WHERE id = $1
-            RETURNING id, tenant_id, supplier_id, order_number, date, status as "status: PurchaseOrderStatus", total_amount, created_at, updated_at
+            RETURNING id, tenant_id, supplier_id, order_number, date, status, total_amount, created_at, updated_at
             "#
         )
         .bind(order_id)
