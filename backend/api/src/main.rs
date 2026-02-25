@@ -81,7 +81,7 @@ async fn main() {
         .route("/api/manufacturing/work-orders", get(handlers::manufacturing::list_work_orders).post(handlers::manufacturing::create_work_order))
         .route("/api/manufacturing/work-orders/:id/complete", post(handlers::manufacturing::complete_work_order))
         // Sales
-        .route("/api/sales/customers", post(handlers::sales::create_customer))
+        .route("/api/sales/customers", get(handlers::sales::list_customers).post(handlers::sales::create_customer))
         .route("/api/sales/orders", post(handlers::sales::create_sales_order))
         .route("/api/sales/orders/:id/ship", post(handlers::sales::ship_sales_order))
         .route("/api/sales/trend", get(handlers::sales::get_sales_trend))

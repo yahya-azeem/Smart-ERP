@@ -12,6 +12,16 @@ use uuid::Uuid;
 use crate::state::AppState;
 use crate::error::AppError;
 
+pub async fn list_customers(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<Customer>>, AppError> {
+    let tenant_id = get_tenant_id(&headers)?;
+    let repo = PostgresSalesRepository::new(state.pool);
+    let customers = repo.list_customers(tenant_id).await?;
+    Ok(Json(customers))
+}
+
 pub async fn create_customer(
     State(state): State<AppState>,
     headers: HeaderMap,

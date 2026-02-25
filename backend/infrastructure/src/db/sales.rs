@@ -16,6 +16,17 @@ impl PostgresSalesRepository {
     pub fn new(pool: PgPool) -> Self {
         Self { pool }
     }
+
+    pub async fn list_customers(&self, tenant_id: Uuid) -> Result<Vec<Customer>, Error> {
+        let rows = sqlx::query_as::<_, Customer>(
+            "SELECT * FROM customers WHERE tenant_id = $1 ORDER BY name"
+        )
+        .bind(tenant_id)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
+        Ok(rows)
+    }
 }
 
 #[async_trait]

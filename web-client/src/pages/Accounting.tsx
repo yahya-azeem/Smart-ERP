@@ -34,7 +34,7 @@ const invColumns = [
     invColumnHelper.accessor('status', {
         header: 'Status',
         cell: info => {
-            const s = info.getValue();
+            const s = info.getValue().toUpperCase();
             const color =
                 s === 'PAID' ? 'green' :
                     s === 'OVERDUE' ? 'red' :
@@ -84,7 +84,7 @@ export function Accounting() {
     const pay = payments || [];
     const totalOutstanding = inv.reduce((s, i) => s + Number(i.total_amount) - Number(i.amount_paid), 0);
     const totalCollected = pay.reduce((s, p) => s + Number(p.amount), 0);
-    const overdue = inv.filter(i => i.status === 'OVERDUE').length;
+    const overdue = inv.filter(i => i.status.toUpperCase() === 'OVERDUE').length;
 
     if (loadingInv || loadingPay) {
         return <Center h={300}><Loader size="lg" /></Center>;
