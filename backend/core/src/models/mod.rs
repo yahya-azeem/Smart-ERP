@@ -6,3 +6,5 @@ pub mod sales;
 pub mod accounting;
 pub mod auth;
 pub mod analytics;
+pub mod chart_of_accounts;
+pub mod employee;

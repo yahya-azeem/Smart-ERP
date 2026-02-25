@@ -4,7 +4,7 @@ mod error;
 mod middleware;
 
 use axum::{
-    routing::{get, post},
+    routing::{get, post, delete},
     Router,
     middleware as axum_middleware,
 };
@@ -53,7 +53,7 @@ async fn main() {
     // Database Connection
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool = PgPoolOptions::new()
-        .max_connections(5)
+        .max_connections(20)
         .connect(&database_url)
         .await
         .expect("Failed to connect to database");
@@ -88,6 +88,12 @@ async fn main() {
         // Accounting
         .route("/api/accounting/invoices", get(handlers::accounting::list_invoices).post(handlers::accounting::create_invoice))
         .route("/api/accounting/payments", get(handlers::accounting::list_payments).post(handlers::accounting::record_payment))
+        // Chart of Accounts
+        .route("/api/accounts", get(handlers::chart_of_accounts::list_accounts).post(handlers::chart_of_accounts::create_account))
+        .route("/api/accounts/:id", delete(handlers::chart_of_accounts::delete_account))
+        // Employees
+        .route("/api/employees", get(handlers::employee::list_employees).post(handlers::employee::create_employee))
+        .route("/api/employees/:id", delete(handlers::employee::delete_employee))
         
         .route_layer(axum_middleware::from_fn_with_state(state.clone(), middleware::auth::auth_middleware));
 
