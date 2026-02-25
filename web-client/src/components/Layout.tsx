@@ -58,6 +58,8 @@ import { CreditMemos } from '../pages/CreditMemos';
 import { JournalEntries } from '../pages/JournalEntries';
 import { Checks } from '../pages/Checks';
 import { ReportCenter } from '../pages/ReportCenter';
+import { Payroll } from '../pages/Payroll';
+import { InventoryActivities } from '../pages/InventoryActivities';
 import { useAuth } from '../context/AuthContext';
 
 interface NavItem {
@@ -100,7 +102,7 @@ const navGroups: NavGroup[] = [
     icon: IconUsersGroup,
     items: [
       { label: 'Employee Center', id: 'employees', icon: IconUsersGroup, component: <Employees /> },
-      { label: 'Payroll', id: 'payroll', icon: IconCoin, component: <div>Payroll — Coming Soon</div> },
+      { label: 'Payroll', id: 'payroll', icon: IconCoin, component: <Payroll /> },
     ],
   },
   {
@@ -108,7 +110,7 @@ const navGroups: NavGroup[] = [
     icon: IconPackage,
     items: [
       { label: 'Item List', id: 'products', icon: IconBox, component: <ProductList /> },
-      { label: 'Inventory Activities', id: 'inventory-activities', icon: IconClipboardList, component: <div>Inventory Activities — Coming Soon</div> },
+      { label: 'Inventory Activities', id: 'inventory-activities', icon: IconClipboardList, component: <InventoryActivities /> },
     ],
   },
   {
