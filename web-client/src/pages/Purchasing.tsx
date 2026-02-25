@@ -1,9 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createColumnHelper } from '@tanstack/react-table';
 import { apiClient } from '../api/client';
 import { DenseTable } from '../components/DenseTable';
-import { Title, Badge, SimpleGrid, Paper, Text, Group, ThemeIcon, Loader, Center } from '@mantine/core';
-import { IconTruck, IconPackage, IconBuildingStore } from '@tabler/icons-react';
+import { Title, Badge, SimpleGrid, Paper, Text, Group, ThemeIcon, Loader, Center, Button, Modal, TextInput, Stack } from '@mantine/core';
+import { IconTruck, IconPackage, IconBuildingStore, IconPlus } from '@tabler/icons-react';
+import { useState } from 'react';
 
 interface Supplier {
   id: string;
@@ -68,13 +69,25 @@ export function Purchasing() {
   const received = o.filter(x => x.status === 'RECEIVED').length;
   const totalValue = o.reduce((sum, x) => sum + Number(x.total_amount), 0);
 
+  const qc = useQueryClient();
+  const [addOpen, setAddOpen] = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', phone: '', address: '', contact_person: '' });
+
+  const createMut = useMutation({
+    mutationFn: (data: any) => apiClient.post('/purchasing/suppliers', data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['suppliers'] }); setAddOpen(false); setForm({ name: '', email: '', phone: '', address: '', contact_person: '' }); },
+  });
+
   if (loadingSuppliers || loadingOrders) {
     return <Center h={300}><Loader size="lg" /></Center>;
   }
 
   return (
     <div style={{ padding: 20 }}>
-      <Title order={2} mb="lg">Purchasing</Title>
+      <Group justify="space-between" mb="lg">
+        <Title order={2}>Purchasing</Title>
+        <Button leftSection={<IconPlus size={16} />} onClick={() => setAddOpen(true)}>New Vendor</Button>
+      </Group>
 
       <SimpleGrid cols={3} mb="xl">
         <Paper withBorder p="md" radius="md">
@@ -121,6 +134,17 @@ export function Purchasing() {
       <Paper withBorder radius="md" style={{ overflow: 'hidden' }}>
         <DenseTable data={o} columns={poColumns} />
       </Paper>
+
+      <Modal opened={addOpen} onClose={() => setAddOpen(false)} title="New Vendor" centered size="md">
+        <Stack>
+          <TextInput label="Company Name" required value={form.name} onChange={(e: any) => setForm({ ...form, name: e.currentTarget.value })} />
+          <TextInput label="Contact Person" value={form.contact_person} onChange={(e: any) => setForm({ ...form, contact_person: e.currentTarget.value })} />
+          <TextInput label="Email" value={form.email} onChange={(e: any) => setForm({ ...form, email: e.currentTarget.value })} />
+          <TextInput label="Phone" value={form.phone} onChange={(e: any) => setForm({ ...form, phone: e.currentTarget.value })} />
+          <TextInput label="Address" value={form.address} onChange={(e: any) => setForm({ ...form, address: e.currentTarget.value })} />
+          <Button onClick={() => createMut.mutate(form)} loading={createMut.isPending} disabled={!form.name}>Create Vendor</Button>
+        </Stack>
+      </Modal>
     </div>
   );
 }
