@@ -44,7 +44,7 @@ export function Dashboard() {
     <div style={{ padding: 20 }}>
       <Title order={2} mb="lg">Home</Title>
 
-      <Paper p="xl" radius="md" withBorder mb="xl" bg="gray.0">
+      <Paper p="xl" radius="md" withBorder mb="xl">
         <Title order={4} mb="md" c="dimmed">BUSINESS WORKFLOW</Title>
 
         <Group justify="center" mb="xl">
