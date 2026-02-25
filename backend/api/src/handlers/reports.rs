@@ -43,6 +43,12 @@ pub async fn sales_summary(State(state): State<AppState>, headers: HeaderMap) ->
     Ok(Json(repo.sales_summary(tid).await?))
 }
 
+pub async fn general_ledger(State(state): State<AppState>, headers: HeaderMap) -> Result<Json<GeneralLedger>, AppError> {
+    let tid = get_tenant_id(&headers)?;
+    let repo = PostgresReportsRepository::new(state.pool);
+    Ok(Json(repo.general_ledger(tid).await?))
+}
+
 fn get_tenant_id(headers: &HeaderMap) -> Result<Uuid, AppError> {
     headers.get("x-tenant-id")
         .and_then(|v| v.to_str().ok())

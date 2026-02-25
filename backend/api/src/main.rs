@@ -108,6 +108,7 @@ async fn main() {
         .route("/api/reports/ar-aging", get(handlers::reports::ar_aging))
         .route("/api/reports/ap-aging", get(handlers::reports::ap_aging))
         .route("/api/reports/sales-summary", get(handlers::reports::sales_summary))
+        .route("/api/reports/general-ledger", get(handlers::reports::general_ledger))
         
         .route_layer(axum_middleware::from_fn_with_state(state.clone(), middleware::auth::auth_middleware));
 

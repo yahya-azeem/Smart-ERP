@@ -96,3 +96,23 @@ pub struct ReportDateRange {
     pub from: Option<NaiveDate>,
     pub to: Option<NaiveDate>,
 }
+
+// --- General Ledger ---
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GeneralLedger {
+    pub entries: Vec<GeneralLedgerEntry>,
+    pub total_debits: Decimal,
+    pub total_credits: Decimal,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GeneralLedgerEntry {
+    pub date: NaiveDate,
+    pub account_number: String,
+    pub account_name: String,
+    pub description: String,
+    pub debit: Decimal,
+    pub credit: Decimal,
+    pub balance: Decimal,
+    pub source: String,
+}

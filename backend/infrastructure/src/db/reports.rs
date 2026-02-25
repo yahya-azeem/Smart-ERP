@@ -147,6 +147,34 @@ impl PostgresReportsRepository {
         Ok(SalesSummary { total_invoiced, total_collected, outstanding, invoice_count, avg_invoice, monthly })
     }
 
+    // --- General Ledger ---
+    pub async fn general_ledger(&self, tenant_id: Uuid) -> Result<GeneralLedger, Error> {
+        let rows = sqlx::query_as::<_, (chrono::NaiveDate, String, String, String, Decimal, Decimal)>(
+            "SELECT je.date, COALESCE(a.account_number, ''), a.name, COALESCE(jel.description, je.memo, ''),
+                    COALESCE(jel.debit, 0), COALESCE(jel.credit, 0)
+             FROM journal_entries je
+             JOIN journal_entry_lines jel ON jel.journal_entry_id = je.id
+             JOIN accounts a ON a.id = jel.account_id
+             WHERE je.tenant_id = $1
+             ORDER BY je.date DESC, a.account_number"
+        ).bind(tenant_id).fetch_all(&self.pool).await.map_err(|e| Error::Database(e.to_string()))?;
+
+        let mut entries = Vec::new();
+        let mut total_debits = Decimal::ZERO;
+        let mut total_credits = Decimal::ZERO;
+
+        for (date, acct_num, acct_name, desc, debit, credit) in rows {
+            total_debits += debit;
+            total_credits += credit;
+            entries.push(GeneralLedgerEntry {
+                date, account_number: acct_num, account_name: acct_name,
+                description: desc, debit, credit, balance: debit - credit, source: "Journal Entry".to_string(),
+            });
+        }
+
+        Ok(GeneralLedger { entries, total_debits, total_credits })
+    }
+
     // Helper: get accounts by type
     async fn accounts_by_types(&self, tenant_id: Uuid, types: &[&str]) -> Result<Vec<ReportLine>, Error> {
         let type_list: Vec<String> = types.iter().map(|t| t.to_string()).collect();

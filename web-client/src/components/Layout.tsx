@@ -61,6 +61,8 @@ import { Checks } from '../pages/Checks';
 import { ReportCenter } from '../pages/ReportCenter';
 import { Payroll } from '../pages/Payroll';
 import { InventoryActivities } from '../pages/InventoryActivities';
+import { BankReconciliation } from '../pages/BankReconciliation';
+import { SalesTaxManagement } from '../pages/SalesTaxManagement';
 import { useAuth } from '../context/AuthContext';
 
 interface NavItem {
@@ -130,6 +132,8 @@ const navGroups: NavGroup[] = [
       { label: 'Journal Entries', id: 'journal-entries', icon: IconCalculator, component: <JournalEntries /> },
       { label: 'Bank Deposits', id: 'bank-deposits', icon: IconCash, component: <SalesReceipts /> },
       { label: 'Write Checks', id: 'write-checks', icon: IconFileText, component: <Checks /> },
+      { label: 'Bank Reconciliation', id: 'bank-recon', icon: IconScale, component: <BankReconciliation /> },
+      { label: 'Sales Tax', id: 'sales-tax', icon: IconReceipt, component: <SalesTaxManagement /> },
     ],
   },
   {
