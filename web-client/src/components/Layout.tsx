@@ -1,3 +1,4 @@
+import React, { useEffect, useRef } from 'react';
 import {
   AppShell,
   Burger,
@@ -145,6 +146,15 @@ export function Layout() {
   const { tabs, activeTabId, openTab, closeTab, setActiveTabId } = useWindowManager();
   const { user, logout } = useAuth();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+
+  // Auto-open Home tab on first mount (login)
+  const hasOpened = useRef(false);
+  useEffect(() => {
+    if (!hasOpened.current) {
+      hasOpened.current = true;
+      openTab('home', 'Home', <Dashboard />);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <AppShell
