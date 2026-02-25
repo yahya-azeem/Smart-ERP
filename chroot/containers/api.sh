@@ -36,12 +36,15 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 build_api_container() {
     log_step "API" "Building Rust API container: ${CONTAINER_NAME}"
 
-    # --- FROM openbsd:latest ---
+    # --- FROM openbsd:latest (with compiler — needed for cargo build) ---
     create_chroot "${CONTAINER_NAME}"
 
     # --- RUN pkg_add rust ---
     log_info "Installing Rust toolchain and build dependencies..."
     chroot_pkg_add "${CONTAINER_NAME}" "rust" "gmake" "git"
+
+    # Strip man pages, docs, locale, pkg cache (compiler binaries kept for build)
+    strip_chroot_bloat "${CONTAINER_NAME}"
 
     local chroot_dir="$(chroot_path ${CONTAINER_NAME})"
 

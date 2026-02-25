@@ -27,12 +27,15 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 build_web_container() {
     log_step "WEB" "Building Nginx web container: ${CONTAINER_NAME}"
 
-    # --- FROM openbsd:latest ---
+    # --- FROM openbsd:latest (with compiler — needed for npm build) ---
     create_chroot "${CONTAINER_NAME}"
 
     # --- RUN pkg_add nginx node ---
     log_info "Installing Nginx and Node.js..."
     chroot_pkg_add "${CONTAINER_NAME}" "nginx" "node" "npm"
+
+    # Strip man pages, docs, locale, pkg cache
+    strip_chroot_bloat "${CONTAINER_NAME}"
 
     local chroot_dir="$(chroot_path ${CONTAINER_NAME})"
 

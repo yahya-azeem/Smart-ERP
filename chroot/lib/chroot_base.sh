@@ -65,11 +65,62 @@ download_sets() {
     done
 }
 
+# ---- Exclusion Profiles ----
+# Daemons and services excluded from ALL chroots (not needed for Smart ERP)
+# This is the equivalent of using a minimal Docker base image (alpine vs full debian)
+CHROOT_EXCLUDE_COMMON="
+    ./usr/sbin/httpd
+    ./usr/sbin/relayd
+    ./usr/sbin/smtpd
+    ./usr/sbin/sndiod
+    ./usr/sbin/ftpd
+    ./usr/sbin/tftpd
+    ./usr/sbin/nsd
+    ./usr/sbin/unbound
+    ./usr/sbin/ldapd
+    ./usr/sbin/iked
+    ./usr/sbin/iscsid
+    ./usr/sbin/radiusd
+    ./usr/sbin/bgpd
+    ./usr/sbin/ospfd
+    ./usr/sbin/ospf6d
+    ./usr/sbin/ripd
+    ./usr/sbin/dvmrpd
+    ./usr/sbin/eigrpd
+    ./usr/sbin/ldpd
+    ./usr/sbin/npppd
+    ./usr/sbin/vmd
+    ./usr/sbin/vmctl
+    ./usr/sbin/switchd
+    ./usr/sbin/dhcpd
+    ./usr/sbin/rarpd
+    ./usr/sbin/slaacd
+    ./usr/sbin/rad
+    ./usr/sbin/amd
+    ./usr/sbin/ypserv
+    ./usr/sbin/ypbind
+    ./usr/libexec/smtpd
+    ./usr/libexec/httpd
+    ./usr/share/man/man8/httpd*
+    ./usr/share/man/man8/relayd*
+    ./usr/share/man/man8/smtpd*
+    ./usr/share/man/man5/httpd*
+    ./usr/games
+    ./usr/share/games
+    ./var/games
+"
+
 # ---- Chroot Creation ----
-# Create a new chroot filesystem from base sets.
-# Equivalent to: FROM openbsd:latest in a Dockerfile
+# Create a new chroot filesystem from base sets with selective extraction.
+# Equivalent to: FROM openbsd:latest in a Dockerfile (but slimmer)
+#
+# Usage: create_chroot <name> [exclude_file_list...]
+#   - Always excludes CHROOT_EXCLUDE_COMMON (httpd, relayd, smtpd, etc.)
+#   - Additional excludes can be passed per-container
+#   - Pass "nocomp" as second arg to skip comp.tgz (for runtime-only chroots)
 create_chroot() {
     local name="$1"
+    local skip_comp="${2:-}"
     local chroot_dir="${CHROOT_BASE}/${name}"
 
     if [ -d "${chroot_dir}/bin" ]; then
@@ -80,19 +131,59 @@ create_chroot() {
     log_info "Creating chroot: ${name} at ${chroot_dir}"
     install -d -o root -g wheel "${chroot_dir}"
 
-    # Extract base system
-    log_info "  Extracting base set..."
-    cd "${chroot_dir}"
-    tar xzphf "${SETS_CACHE}/base${OBSD_VERSION/./}.tgz"
+    # Build tar exclude args from common list
+    local exclude_args=""
+    for pattern in ${CHROOT_EXCLUDE_COMMON}; do
+        exclude_args="${exclude_args} --exclude=${pattern}"
+    done
 
-    # Extract compiler/dev tools
-    log_info "  Extracting compiler set..."
-    tar xzphf "${SETS_CACHE}/comp${OBSD_VERSION/./}.tgz"
+    # Extract base system (with exclusions)
+    log_info "  Extracting base set (excluding httpd, relayd, smtpd, sndiod, games, etc.)..."
+    cd "${chroot_dir}"
+    eval tar xzphf "${SETS_CACHE}/base${OBSD_VERSION/./}.tgz" ${exclude_args}
+
+    # Extract compiler/dev tools (only if needed)
+    if [ "${skip_comp}" = "nocomp" ]; then
+        log_info "  Skipping compiler set (runtime-only container)."
+    else
+        log_info "  Extracting compiler set..."
+        tar xzphf "${SETS_CACHE}/comp${OBSD_VERSION/./}.tgz"
+    fi
 
     # Setup essential chroot mounts and configs
     _setup_chroot_env "${chroot_dir}"
 
-    log_info "Chroot ${name} created successfully."
+    log_info "Chroot ${name} created successfully (slim profile — no unnecessary daemons)."
+}
+
+# ---- Post-Extraction Cleanup ----
+# Remove additional unnecessary files from a chroot after package installation.
+# Call this after chroot_pkg_add to strip unneeded man pages, docs, etc.
+# Equivalent to: RUN rm -rf /var/cache/... in Dockerfile
+strip_chroot_bloat() {
+    local name="$1"
+    local chroot_dir="${CHROOT_BASE}/${name}"
+
+    log_info "Stripping unnecessary files from ${name}..."
+
+    # Remove man pages (save ~30MB)
+    rm -rf "${chroot_dir}/usr/share/man" 2>/dev/null || true
+
+    # Remove info pages
+    rm -rf "${chroot_dir}/usr/share/info" 2>/dev/null || true
+
+    # Remove locale data we don't need
+    rm -rf "${chroot_dir}/usr/share/locale" 2>/dev/null || true
+
+    # Remove example configs (packages leave these behind)
+    rm -rf "${chroot_dir}/usr/local/share/examples" 2>/dev/null || true
+    rm -rf "${chroot_dir}/usr/local/share/doc" 2>/dev/null || true
+
+    # Remove package cache
+    rm -rf "${chroot_dir}/var/cache/pkg" 2>/dev/null || true
+    rm -rf "${chroot_dir}/tmp/"* 2>/dev/null || true
+
+    log_info "  Bloat stripped from ${name}."
 }
 
 # ---- Chroot Environment Setup ----

@@ -31,12 +31,16 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 build_db_container() {
     log_step "DB" "Building PostgreSQL container: ${CONTAINER_NAME}"
 
-    # --- FROM openbsd:latest ---
-    create_chroot "${CONTAINER_NAME}"
+    # --- FROM openbsd:latest (slim, no compiler) ---
+    # DB only runs PostgreSQL at runtime — no need for comp.tgz
+    create_chroot "${CONTAINER_NAME}" "nocomp"
 
     # --- RUN pkg_add postgresql-server ---
     log_info "Installing PostgreSQL server..."
     chroot_pkg_add "${CONTAINER_NAME}" "postgresql-server"
+
+    # Strip unnecessary bloat (man pages, docs, locale, pkg cache)
+    strip_chroot_bloat "${CONTAINER_NAME}"
 
     # --- Create data directory (persistent volume equivalent) ---
     local chroot_dir="$(chroot_path ${CONTAINER_NAME})"
