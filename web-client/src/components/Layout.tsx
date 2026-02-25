@@ -4,6 +4,9 @@ import { useWindowManager } from '../context/WindowManagerContext';
 import { ProductList } from '../pages/ProductList';
 import { Dashboard } from '../pages/Dashboard';
 import { CustomerCenter } from '../pages/CustomerCenter';
+import { Purchasing } from '../pages/Purchasing';
+import { Manufacturing } from '../pages/Manufacturing';
+import { Accounting } from '../pages/Accounting';
 import { useAuth } from '../context/AuthContext';
 
 export function Layout() {
@@ -15,9 +18,9 @@ export function Layout() {
     { label: 'Home', id: 'home', component: <Dashboard /> },
     { label: 'Customer Center', id: 'customers', component: <CustomerCenter /> },
     { label: 'Products', id: 'products', component: <ProductList /> },
-    { label: 'Purchasing', id: 'purchasing', component: <div>Purchasing</div> },
-    { label: 'Manufacturing', id: 'manufacturing', component: <div>Manufacturing</div> },
-    { label: 'Accounting', id: 'accounting', component: <div>Accounting</div> },
+    { label: 'Purchasing', id: 'purchasing', component: <Purchasing /> },
+    { label: 'Manufacturing', id: 'manufacturing', component: <Manufacturing /> },
+    { label: 'Accounting', id: 'accounting', component: <Accounting /> },
   ];
 
   const items = links.map((link) => (

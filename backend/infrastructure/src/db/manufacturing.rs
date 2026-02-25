@@ -16,6 +16,28 @@ impl PostgresManufacturingRepository {
     pub fn new(pool: PgPool) -> Self {
         Self { pool }
     }
+
+    pub async fn list_recipes(&self, tenant_id: Uuid) -> Result<Vec<Recipe>, Error> {
+        let rows = sqlx::query_as::<_, Recipe>(
+            "SELECT * FROM recipes WHERE tenant_id = $1 ORDER BY name"
+        )
+        .bind(tenant_id)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
+        Ok(rows)
+    }
+
+    pub async fn list_work_orders(&self, tenant_id: Uuid) -> Result<Vec<WorkOrder>, Error> {
+        let rows = sqlx::query_as::<_, WorkOrder>(
+            "SELECT id, tenant_id, recipe_id, quantity, status, start_date, end_date, created_at, updated_at FROM work_orders WHERE tenant_id = $1 ORDER BY created_at DESC"
+        )
+        .bind(tenant_id)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
+        Ok(rows)
+    }
 }
 
 #[async_trait]

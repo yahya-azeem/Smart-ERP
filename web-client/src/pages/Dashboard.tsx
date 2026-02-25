@@ -3,6 +3,8 @@ import { IconArrowRight, IconShoppingCart, IconTruck, IconFileInvoice, IconCoin,
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useWindowManager } from '../context/WindowManagerContext';
 import { ProductList } from './ProductList';
+import { Purchasing } from './Purchasing';
+import { Accounting } from './Accounting';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 
@@ -27,12 +29,12 @@ export function Dashboard() {
   const { data: trend } = useQuery({
     queryKey: ['sales-trend'],
     queryFn: async () => {
-        try {
-            const res = await apiClient.get('/sales/trend');
-            return res.data.map((d: any) => ({ ...d, amount: Number(d.amount) }));
-        } catch {
-            return [];
-        }
+      try {
+        const res = await apiClient.get('/sales/trend');
+        return res.data.map((d: any) => ({ ...d, amount: Number(d.amount) }));
+      } catch {
+        return [];
+      }
     }
   });
 
@@ -44,45 +46,45 @@ export function Dashboard() {
 
       <Paper p="xl" radius="md" withBorder mb="xl" bg="gray.0">
         <Title order={4} mb="md" c="dimmed">BUSINESS WORKFLOW</Title>
-        
+
         <Group justify="center" mb="xl">
-            <WorkflowStep 
-                icon={IconShoppingCart} 
-                label="Purchase Order" 
-                onClick={() => openTab('purchasing', 'Purchasing', <div>Purchasing Module</div>)} 
-            />
-            <Arrow />
-            <WorkflowStep 
-                icon={IconTruck} 
-                label="Receive Items" 
-                onClick={() => openTab('inventory', 'Inventory', <ProductList />)} 
-            />
-            <Arrow />
-            <WorkflowStep 
-                icon={IconFileInvoice} 
-                label="Enter Bills" 
-                onClick={() => openTab('accounting', 'Bills', <div>Bill Entry</div>)} 
-            />
+          <WorkflowStep
+            icon={IconShoppingCart}
+            label="Purchase Order"
+            onClick={() => openTab('purchasing', 'Purchasing', <Purchasing />)}
+          />
+          <Arrow />
+          <WorkflowStep
+            icon={IconTruck}
+            label="Receive Items"
+            onClick={() => openTab('inventory', 'Inventory', <ProductList />)}
+          />
+          <Arrow />
+          <WorkflowStep
+            icon={IconFileInvoice}
+            label="Enter Bills"
+            onClick={() => openTab('accounting', 'Accounting', <Accounting />)}
+          />
         </Group>
 
         <Group justify="center">
-            <WorkflowStep 
-                icon={IconUsers} 
-                label="Sales Order" 
-                onClick={() => openTab('sales', 'Sales Orders', <div>Sales Module</div>)} 
-            />
-            <Arrow />
-            <WorkflowStep 
-                icon={IconBox} 
-                label="Ship / Invoice" 
-                onClick={() => openTab('sales', 'Invoicing', <div>Invoicing Module</div>)} 
-            />
-            <Arrow />
-            <WorkflowStep 
-                icon={IconCoin} 
-                label="Receive Payment" 
-                onClick={() => openTab('accounting', 'Payments', <div>Receive Payments</div>)} 
-            />
+          <WorkflowStep
+            icon={IconUsers}
+            label="Sales Order"
+            onClick={() => openTab('sales', 'Sales Orders', <div>Sales Module</div>)}
+          />
+          <Arrow />
+          <WorkflowStep
+            icon={IconBox}
+            label="Ship / Invoice"
+            onClick={() => openTab('sales', 'Invoicing', <div>Invoicing Module</div>)}
+          />
+          <Arrow />
+          <WorkflowStep
+            icon={IconCoin}
+            label="Receive Payment"
+            onClick={() => openTab('accounting', 'Accounting', <Accounting />)}
+          />
         </Group>
       </Paper>
 
@@ -106,24 +108,24 @@ export function Dashboard() {
           <Title order={4} mb="md">Company Snapshot</Title>
           <Group justify="center" gap="xl">
             <RingProgress
-                size={150}
-                roundCaps
-                thickness={12}
-                sections={[{ value: 65, color: 'teal' }]}
-                label={
-                    <Center>
-                        <Stack gap={0} align="center">
-                            <Text fw={700} size="xl">65%</Text>
-                            <Text size="xs" c="dimmed">Goal Reached</Text>
-                        </Stack>
-                    </Center>
-                }
+              size={150}
+              roundCaps
+              thickness={12}
+              sections={[{ value: 65, color: 'teal' }]}
+              label={
+                <Center>
+                  <Stack gap={0} align="center">
+                    <Text fw={700} size="xl">65%</Text>
+                    <Text size="xs" c="dimmed">Goal Reached</Text>
+                  </Stack>
+                </Center>
+              }
             />
             <Stack>
-                <Text size="xl" fw={700}>$145,230</Text>
-                <Text size="sm" c="dimmed">Total Income</Text>
-                <Text size="xl" fw={700} c="red">$23,400</Text>
-                <Text size="sm" c="dimmed">Expenses</Text>
+              <Text size="xl" fw={700}>$145,230</Text>
+              <Text size="sm" c="dimmed">Total Income</Text>
+              <Text size="xl" fw={700} c="red">$23,400</Text>
+              <Text size="sm" c="dimmed">Expenses</Text>
             </Stack>
           </Group>
         </Card>

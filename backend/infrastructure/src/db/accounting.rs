@@ -14,6 +14,28 @@ impl PostgresAccountingRepository {
     pub fn new(pool: PgPool) -> Self {
         Self { pool }
     }
+
+    pub async fn list_invoices(&self, tenant_id: Uuid) -> Result<Vec<Invoice>, Error> {
+        let rows = sqlx::query_as::<_, Invoice>(
+            "SELECT id, tenant_id, customer_id, sales_order_id, invoice_number, date, due_date, status, total_amount, amount_paid, created_at, updated_at FROM invoices WHERE tenant_id = $1 ORDER BY created_at DESC"
+        )
+        .bind(tenant_id)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
+        Ok(rows)
+    }
+
+    pub async fn list_payments(&self, tenant_id: Uuid) -> Result<Vec<Payment>, Error> {
+        let rows = sqlx::query_as::<_, Payment>(
+            "SELECT id, tenant_id, invoice_id, amount, date, method, reference, created_at, updated_at FROM payments WHERE tenant_id = $1 ORDER BY created_at DESC"
+        )
+        .bind(tenant_id)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
+        Ok(rows)
+    }
 }
 
 #[async_trait]

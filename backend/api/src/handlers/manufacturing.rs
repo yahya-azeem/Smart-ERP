@@ -11,6 +11,26 @@ use uuid::Uuid;
 use crate::state::AppState;
 use crate::error::AppError;
 
+pub async fn list_recipes(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<Recipe>>, AppError> {
+    let tenant_id = get_tenant_id(&headers)?;
+    let repo = PostgresManufacturingRepository::new(state.pool);
+    let recipes = repo.list_recipes(tenant_id).await?;
+    Ok(Json(recipes))
+}
+
+pub async fn list_work_orders(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<WorkOrder>>, AppError> {
+    let tenant_id = get_tenant_id(&headers)?;
+    let repo = PostgresManufacturingRepository::new(state.pool);
+    let orders = repo.list_work_orders(tenant_id).await?;
+    Ok(Json(orders))
+}
+
 pub async fn create_recipe(
     State(state): State<AppState>,
     headers: HeaderMap,

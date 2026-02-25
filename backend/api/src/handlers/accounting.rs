@@ -11,6 +11,26 @@ use uuid::Uuid;
 use crate::state::AppState;
 use crate::error::AppError;
 
+pub async fn list_invoices(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<Invoice>>, AppError> {
+    let tenant_id = get_tenant_id(&headers)?;
+    let repo = PostgresAccountingRepository::new(state.pool);
+    let invoices = repo.list_invoices(tenant_id).await?;
+    Ok(Json(invoices))
+}
+
+pub async fn list_payments(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<Payment>>, AppError> {
+    let tenant_id = get_tenant_id(&headers)?;
+    let repo = PostgresAccountingRepository::new(state.pool);
+    let payments = repo.list_payments(tenant_id).await?;
+    Ok(Json(payments))
+}
+
 pub async fn create_invoice(
     State(state): State<AppState>,
     headers: HeaderMap,

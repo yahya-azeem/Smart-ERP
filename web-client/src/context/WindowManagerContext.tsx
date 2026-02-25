@@ -23,6 +23,8 @@ export const WindowManagerProvider = ({ children }: { children: React.ReactNode 
   const openTab = (id: string, title: string, component: React.ReactNode) => {
     if (!tabs.find((t) => t.id === id)) {
       setTabs((prev) => [...prev, { id, title, component }]);
+    } else {
+      setTabs((prev) => prev.map((t) => t.id === id ? { ...t, component } : t));
     }
     setActiveTabId(id);
   };

@@ -16,6 +16,28 @@ impl PostgresPurchasingRepository {
     pub fn new(pool: PgPool) -> Self {
         Self { pool }
     }
+
+    pub async fn list_suppliers(&self, tenant_id: Uuid) -> Result<Vec<Supplier>, Error> {
+        let rows = sqlx::query_as::<_, Supplier>(
+            "SELECT * FROM suppliers WHERE tenant_id = $1 ORDER BY name"
+        )
+        .bind(tenant_id)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
+        Ok(rows)
+    }
+
+    pub async fn list_purchase_orders(&self, tenant_id: Uuid) -> Result<Vec<PurchaseOrder>, Error> {
+        let rows = sqlx::query_as::<_, PurchaseOrder>(
+            "SELECT id, tenant_id, supplier_id, order_number, date, status, total_amount, created_at, updated_at FROM purchase_orders WHERE tenant_id = $1 ORDER BY created_at DESC"
+        )
+        .bind(tenant_id)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| Error::Database(e.to_string()))?;
+        Ok(rows)
+    }
 }
 
 #[async_trait]

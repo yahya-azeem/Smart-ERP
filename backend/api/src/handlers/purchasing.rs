@@ -11,6 +11,26 @@ use uuid::Uuid;
 use crate::state::AppState;
 use crate::error::AppError;
 
+pub async fn list_suppliers(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<Supplier>>, AppError> {
+    let tenant_id = get_tenant_id(&headers)?;
+    let repo = PostgresPurchasingRepository::new(state.pool);
+    let suppliers = repo.list_suppliers(tenant_id).await?;
+    Ok(Json(suppliers))
+}
+
+pub async fn list_purchase_orders(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Json<Vec<PurchaseOrder>>, AppError> {
+    let tenant_id = get_tenant_id(&headers)?;
+    let repo = PostgresPurchasingRepository::new(state.pool);
+    let orders = repo.list_purchase_orders(tenant_id).await?;
+    Ok(Json(orders))
+}
+
 pub async fn create_supplier(
     State(state): State<AppState>,
     headers: HeaderMap,

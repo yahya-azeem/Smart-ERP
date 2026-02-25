@@ -73,12 +73,12 @@ async fn main() {
         // Inventory
         .route("/api/products", get(handlers::inventory::list_products).post(handlers::inventory::create_product))
         // Purchasing
-        .route("/api/purchasing/suppliers", post(handlers::purchasing::create_supplier))
-        .route("/api/purchasing/orders", post(handlers::purchasing::create_purchase_order))
+        .route("/api/purchasing/suppliers", get(handlers::purchasing::list_suppliers).post(handlers::purchasing::create_supplier))
+        .route("/api/purchasing/orders", get(handlers::purchasing::list_purchase_orders).post(handlers::purchasing::create_purchase_order))
         .route("/api/purchasing/orders/:id/receive", post(handlers::purchasing::receive_purchase_order))
         // Manufacturing
-        .route("/api/manufacturing/recipes", post(handlers::manufacturing::create_recipe))
-        .route("/api/manufacturing/work-orders", post(handlers::manufacturing::create_work_order))
+        .route("/api/manufacturing/recipes", get(handlers::manufacturing::list_recipes).post(handlers::manufacturing::create_recipe))
+        .route("/api/manufacturing/work-orders", get(handlers::manufacturing::list_work_orders).post(handlers::manufacturing::create_work_order))
         .route("/api/manufacturing/work-orders/:id/complete", post(handlers::manufacturing::complete_work_order))
         // Sales
         .route("/api/sales/customers", post(handlers::sales::create_customer))
@@ -86,8 +86,8 @@ async fn main() {
         .route("/api/sales/orders/:id/ship", post(handlers::sales::ship_sales_order))
         .route("/api/sales/trend", get(handlers::sales::get_sales_trend))
         // Accounting
-        .route("/api/accounting/invoices", post(handlers::accounting::create_invoice))
-        .route("/api/accounting/payments", post(handlers::accounting::record_payment))
+        .route("/api/accounting/invoices", get(handlers::accounting::list_invoices).post(handlers::accounting::create_invoice))
+        .route("/api/accounting/payments", get(handlers::accounting::list_payments).post(handlers::accounting::record_payment))
         
         .route_layer(axum_middleware::from_fn_with_state(state.clone(), middleware::auth::auth_middleware));
 
