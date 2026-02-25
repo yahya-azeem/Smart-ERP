@@ -94,6 +94,13 @@ async fn main() {
         // Employees
         .route("/api/employees", get(handlers::employee::list_employees).post(handlers::employee::create_employee))
         .route("/api/employees/:id", delete(handlers::employee::delete_employee))
+        // Phase 2: Transactions
+        .route("/api/estimates", get(handlers::transactions::list_estimates).post(handlers::transactions::create_estimate))
+        .route("/api/bills", get(handlers::transactions::list_bills).post(handlers::transactions::create_bill))
+        .route("/api/sales-receipts", get(handlers::transactions::list_sales_receipts).post(handlers::transactions::create_sales_receipt))
+        .route("/api/credit-memos", get(handlers::transactions::list_credit_memos).post(handlers::transactions::create_credit_memo))
+        .route("/api/journal-entries", get(handlers::transactions::list_journal_entries).post(handlers::transactions::create_journal_entry))
+        .route("/api/checks", get(handlers::transactions::list_checks).post(handlers::transactions::create_check))
         
         .route_layer(axum_middleware::from_fn_with_state(state.clone(), middleware::auth::auth_middleware));
 

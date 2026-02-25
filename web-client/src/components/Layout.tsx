@@ -51,6 +51,12 @@ import { Manufacturing } from '../pages/Manufacturing';
 import { Accounting } from '../pages/Accounting';
 import { ChartOfAccounts } from '../pages/ChartOfAccounts';
 import { Employees } from '../pages/Employees';
+import { Estimates } from '../pages/Estimates';
+import { Bills } from '../pages/Bills';
+import { SalesReceipts } from '../pages/SalesReceipts';
+import { CreditMemos } from '../pages/CreditMemos';
+import { JournalEntries } from '../pages/JournalEntries';
+import { Checks } from '../pages/Checks';
 import { useAuth } from '../context/AuthContext';
 
 interface NavItem {
@@ -73,9 +79,9 @@ const navGroups: NavGroup[] = [
     items: [
       { label: 'Customer Center', id: 'customers', icon: IconUsers, component: <CustomerCenter /> },
       { label: 'Invoices', id: 'invoices', icon: IconFileInvoice, component: <Accounting /> },
-      { label: 'Estimates', id: 'estimates', icon: IconFileText, component: <div>Estimates — Coming Soon</div> },
-      { label: 'Sales Receipts', id: 'sales-receipts', icon: IconReceipt, component: <div>Sales Receipts — Coming Soon</div> },
-      { label: 'Credit Memos', id: 'credit-memos', icon: IconCreditCard, component: <div>Credit Memos — Coming Soon</div> },
+      { label: 'Estimates', id: 'estimates', icon: IconFileText, component: <Estimates /> },
+      { label: 'Sales Receipts', id: 'sales-receipts', icon: IconReceipt, component: <SalesReceipts /> },
+      { label: 'Credit Memos', id: 'credit-memos', icon: IconCreditCard, component: <CreditMemos /> },
     ],
   },
   {
@@ -84,8 +90,8 @@ const navGroups: NavGroup[] = [
     items: [
       { label: 'Vendor Center', id: 'purchasing', icon: IconTruck, component: <Purchasing /> },
       { label: 'Purchase Orders', id: 'purchase-orders', icon: IconShoppingCart, component: <Purchasing /> },
-      { label: 'Enter Bills', id: 'enter-bills', icon: IconFileText, component: <div>Enter Bills — Coming Soon</div> },
-      { label: 'Pay Bills', id: 'pay-bills', icon: IconCash, component: <div>Pay Bills — Coming Soon</div> },
+      { label: 'Enter Bills', id: 'enter-bills', icon: IconFileText, component: <Bills /> },
+      { label: 'Pay Bills', id: 'pay-bills', icon: IconCash, component: <Bills /> },
     ],
   },
   {
@@ -117,9 +123,9 @@ const navGroups: NavGroup[] = [
     icon: IconScale,
     items: [
       { label: 'Chart of Accounts', id: 'chart-of-accounts', icon: IconListDetails, component: <ChartOfAccounts /> },
-      { label: 'Journal Entries', id: 'journal-entries', icon: IconCalculator, component: <div>Journal Entries — Coming Soon</div> },
-      { label: 'Bank Deposits', id: 'bank-deposits', icon: IconCash, component: <div>Bank Deposits — Coming Soon</div> },
-      { label: 'Write Checks', id: 'write-checks', icon: IconFileText, component: <div>Write Checks — Coming Soon</div> },
+      { label: 'Journal Entries', id: 'journal-entries', icon: IconCalculator, component: <JournalEntries /> },
+      { label: 'Bank Deposits', id: 'bank-deposits', icon: IconCash, component: <SalesReceipts /> },
+      { label: 'Write Checks', id: 'write-checks', icon: IconFileText, component: <Checks /> },
     ],
   },
   {

@@ -7,3 +7,4 @@ pub mod accounting;
 pub mod auth;
 pub mod chart_of_accounts;
 pub mod employee;
+pub mod transactions;
