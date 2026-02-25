@@ -27,5 +27,9 @@ RUN apt-get update -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/target/release/api /app/smart-erp-api
+# CVE-09: Run as non-root user
+RUN adduser --disabled-password --no-create-home --gecos "" appuser && \
+    chown appuser:appuser /app/smart-erp-api
+USER appuser
 ENV APP_ENVIRONMENT=production
 ENTRYPOINT ["/app/smart-erp-api"]

@@ -1,12 +1,23 @@
 import axios from 'axios';
 
 export const apiClient = axios.create({
-  baseURL: 'http://localhost:3000/api', // Direct to Rust API
+  baseURL: '/api', // CVE-13: Use relative URL via nginx proxy (no hardcoded port)
   headers: {
     'Content-Type': 'application/json',
-    'x-tenant-id': '11111111-1111-1111-1111-111111111111', // Default Tenant from seed data
   },
 });
+
+// Dynamically set tenant-id from JWT claims when token is available
+export function setTenantFromToken(token: string) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    if (payload.tenant_id) {
+      apiClient.defaults.headers.common['x-tenant-id'] = payload.tenant_id;
+    }
+  } catch {
+    // Invalid token format — tenant-id will not be set
+  }
+}
 
 apiClient.interceptors.response.use(
   (response) => response,

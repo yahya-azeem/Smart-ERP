@@ -11,7 +11,8 @@ use axum::{
 use sqlx::postgres::PgPoolOptions;
 use std::net::SocketAddr;
 use tower_http::trace::TraceLayer;
-use tower_http::cors::{CorsLayer, Any};
+use tower_http::cors::{CorsLayer, AllowOrigin};
+use tower_http::limit::RequestBodyLimitLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use state::AppState;
 
@@ -58,18 +59,19 @@ async fn main() {
         .await
         .expect("Failed to connect to database");
 
-    let jwt_secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "secret".to_string());
+    let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET environment variable must be set — refusing to start with default secret");
 
     let state = AppState { pool, jwt_secret };
 
-    // Public Routes (No Auth)
+    // Public Routes (No Auth) — CVE-02: registration moved to protected routes
     let public_routes = Router::new()
         .route("/", get(root))
-        .route("/api/auth/login", post(handlers::auth::login))
-        .route("/api/auth/register", post(handlers::auth::register));
+        .route("/api/auth/login", post(handlers::auth::login));
 
     // Protected Routes (Require Auth + Tenant Match)
     let protected_routes = Router::new()
+        // Auth (admin-only) — CVE-02
+        .route("/api/auth/register", post(handlers::auth::register))
         // Inventory
         .route("/api/products", get(handlers::inventory::list_products).post(handlers::inventory::create_product))
         // Purchasing
@@ -117,10 +119,18 @@ async fn main() {
         .merge(public_routes)
         .merge(protected_routes)
         .layer(CorsLayer::new()
-            .allow_origin(Any)
-            .allow_methods(Any)
-            .allow_headers(Any)
+            .allow_origin(AllowOrigin::list([
+                "http://localhost:8080".parse().unwrap(),
+                "http://localhost:3000".parse().unwrap(),
+            ]))
+            .allow_methods([axum::http::Method::GET, axum::http::Method::POST, axum::http::Method::DELETE, axum::http::Method::PUT, axum::http::Method::PATCH, axum::http::Method::OPTIONS])
+            .allow_headers([
+                axum::http::header::CONTENT_TYPE,
+                axum::http::header::AUTHORIZATION,
+                axum::http::HeaderName::from_static("x-tenant-id"),
+            ])
         )
+        .layer(RequestBodyLimitLayer::new(2 * 1024 * 1024)) // CVE-07: 2MB body limit
         .layer(TraceLayer::new_for_http())
         .with_state(state);
 

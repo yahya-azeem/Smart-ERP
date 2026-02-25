@@ -12,7 +12,12 @@ impl IntoResponse for AppError {
         let (status, message) = match self.0 {
             smart_erp_core::error::Error::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
             smart_erp_core::error::Error::BusinessRule(msg) => (StatusCode::BAD_REQUEST, msg),
-            smart_erp_core::error::Error::Database(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
+            smart_erp_core::error::Error::Database(msg) => {
+                // CVE-04: Log real error server-side, return generic message to client
+                tracing::error!("Database error: {}", msg);
+                (StatusCode::INTERNAL_SERVER_ERROR, "An internal error occurred".to_string())
+            },
+            smart_erp_core::error::Error::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized".to_string()),
             _ => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Internal Server Error".to_string(),

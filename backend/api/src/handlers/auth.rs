@@ -1,10 +1,11 @@
 use axum::{
     extract::State,
     http::HeaderMap,
+    Extension,
     Json,
 };
 use smart_erp_core::models::auth::{
-    AuthResponse, AuthService, LoginRequest, RegisterRequest, User,
+    AuthResponse, AuthService, Claims, LoginRequest, RegisterRequest, User,
 };
 use infrastructure::db::auth::PostgresAuthRepository;
 use uuid::Uuid;
@@ -25,8 +26,15 @@ pub async fn login(
 pub async fn register(
     State(state): State<AppState>,
     headers: HeaderMap,
+    Extension(claims): Extension<Claims>,
     Json(payload): Json<RegisterRequest>,
 ) -> Result<Json<User>, AppError> {
+    // CVE-05: Only ADMIN users can register new accounts
+    if claims.role != "ADMIN" {
+        return Err(AppError(smart_erp_core::error::Error::BusinessRule(
+            "Only administrators can register new users".to_string()
+        )));
+    }
     let tenant_id = get_tenant_id(&headers)?;
     let repo = PostgresAuthRepository::new(state.pool, state.jwt_secret);
     let user = repo.register(tenant_id, payload).await?;

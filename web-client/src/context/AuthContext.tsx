@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { apiClient } from '../api/client';
+import { apiClient, setTenantFromToken } from '../api/client';
 
 interface User {
   username: string;
@@ -17,21 +17,26 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  // CVE-06: Use sessionStorage instead of localStorage to reduce XSS exposure
+  // Token is not persisted across browser restarts, reducing the theft window
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(sessionStorage.getItem('token'));
 
   useEffect(() => {
     if (token) {
-      localStorage.setItem('token', token);
+      sessionStorage.setItem('token', token);
       apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const storedUser = localStorage.getItem('user');
+      // CVE-13: Dynamically set tenant-id from JWT claims
+      setTenantFromToken(token);
+      const storedUser = sessionStorage.getItem('user');
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       }
     } else {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
       delete apiClient.defaults.headers.common['Authorization'];
+      delete apiClient.defaults.headers.common['x-tenant-id'];
       setUser(null);
     }
   }, [token]);
@@ -39,7 +44,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = (newToken: string, newUser: User) => {
     setToken(newToken);
     setUser(newUser);
-    localStorage.setItem('user', JSON.stringify(newUser));
+    sessionStorage.setItem('user', JSON.stringify(newUser));
   };
 
   const logout = () => {

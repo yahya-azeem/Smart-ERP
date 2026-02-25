@@ -22,7 +22,7 @@ strum = { version = "0.26", features = ["derive"] }
 thiserror = "1.0"
 dotenvy = "0.15"
 tower = "0.4"
-tower-http = { version = "0.5", features = ["cors", "trace"] }
+tower-http = { version = "0.5", features = ["cors", "trace", "limit"] }
 validator = { version = "0.16", features = ["derive"] }
 async-trait = "0.1"
 argon2 = { version = "0.5", features = ["std"] }
