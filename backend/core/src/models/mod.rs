@@ -9,3 +9,4 @@ pub mod analytics;
 pub mod chart_of_accounts;
 pub mod employee;
 pub mod transactions;
+pub mod reports;

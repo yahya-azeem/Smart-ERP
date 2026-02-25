@@ -101,6 +101,13 @@ async fn main() {
         .route("/api/credit-memos", get(handlers::transactions::list_credit_memos).post(handlers::transactions::create_credit_memo))
         .route("/api/journal-entries", get(handlers::transactions::list_journal_entries).post(handlers::transactions::create_journal_entry))
         .route("/api/checks", get(handlers::transactions::list_checks).post(handlers::transactions::create_check))
+        // Phase 3: Reports
+        .route("/api/reports/profit-loss", get(handlers::reports::profit_and_loss))
+        .route("/api/reports/balance-sheet", get(handlers::reports::balance_sheet))
+        .route("/api/reports/trial-balance", get(handlers::reports::trial_balance))
+        .route("/api/reports/ar-aging", get(handlers::reports::ar_aging))
+        .route("/api/reports/ap-aging", get(handlers::reports::ap_aging))
+        .route("/api/reports/sales-summary", get(handlers::reports::sales_summary))
         
         .route_layer(axum_middleware::from_fn_with_state(state.clone(), middleware::auth::auth_middleware));
 

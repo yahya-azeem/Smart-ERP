@@ -57,6 +57,7 @@ import { SalesReceipts } from '../pages/SalesReceipts';
 import { CreditMemos } from '../pages/CreditMemos';
 import { JournalEntries } from '../pages/JournalEntries';
 import { Checks } from '../pages/Checks';
+import { ReportCenter } from '../pages/ReportCenter';
 import { useAuth } from '../context/AuthContext';
 
 interface NavItem {
@@ -132,7 +133,7 @@ const navGroups: NavGroup[] = [
     label: 'Reports',
     icon: IconReportAnalytics,
     items: [
-      { label: 'Report Center', id: 'reports', icon: IconChartBar, component: <div>Report Center — Coming Soon</div> },
+      { label: 'Report Center', id: 'reports', icon: IconChartBar, component: <ReportCenter /> },
     ],
   },
 ];
