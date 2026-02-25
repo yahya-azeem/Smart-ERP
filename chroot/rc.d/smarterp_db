@@ -1,0 +1,46 @@
+#!/bin/ksh
+# Unix Chroot Container — PostgreSQL Database (rc.d service)
+# Starts/stops PostgreSQL inside /var/chroot/smarterp-db
+#
+# Install: install -m 555 smarterp_db /etc/rc.d/smarterp_db
+# Enable:  rcctl enable smarterp_db
+# Start:   rcctl start smarterp_db
+
+daemon="/usr/local/bin/pg_ctl"
+daemon_user="_postgresql"
+
+. /etc/rc.d/rc.subr
+
+CHROOT="/var/chroot/smarterp-db"
+PGDATA="/var/postgresql/data"
+
+pexp="postgres.*${PGDATA}"
+rc_bg=YES
+rc_reload=NO
+
+rc_start() {
+    echo "Starting PostgreSQL in chroot ${CHROOT}..."
+    chroot "${CHROOT}" su -s /bin/sh ${daemon_user} -c \
+        "${daemon} -D ${PGDATA} -l /var/postgresql/backups/startup.log start"
+
+    # Wait for readiness
+    local n=0
+    while [ $n -lt 30 ]; do
+        chroot "${CHROOT}" /usr/local/bin/pg_isready -h 127.0.0.1 >/dev/null 2>&1 && return 0
+        sleep 1
+        n=$((n + 1))
+    done
+    echo "WARNING: PostgreSQL may not have started in time."
+}
+
+rc_stop() {
+    echo "Stopping PostgreSQL in chroot ${CHROOT}..."
+    chroot "${CHROOT}" su -s /bin/sh ${daemon_user} -c \
+        "${daemon} -D ${PGDATA} stop -m fast" || true
+}
+
+rc_check() {
+    chroot "${CHROOT}" /usr/local/bin/pg_isready -h 127.0.0.1 >/dev/null 2>&1
+}
+
+rc_cmd $1

@@ -1,0 +1,65 @@
+#!/bin/ksh
+# Unix Chroot Container — Smart ERP API (rc.d service)
+# Starts/stops the Rust API server inside /var/chroot/smarterp-api
+#
+# Install: install -m 555 smarterp_api /etc/rc.d/smarterp_api
+# Enable:  rcctl enable smarterp_api
+# Start:   rcctl start smarterp_api
+
+daemon="/app/smart-erp-api"
+daemon_user="_smarterp_api"
+
+. /etc/rc.d/rc.subr
+
+CHROOT="/var/chroot/smarterp-api"
+ENV_FILE="/app/env.conf"
+
+pexp="smart-erp-api"
+rc_bg=YES
+rc_reload=NO
+
+rc_pre() {
+    # Ensure the DB container is running before starting API
+    if ! /usr/local/bin/pg_isready -h 127.0.0.1 >/dev/null 2>&1; then
+        echo "WARNING: PostgreSQL does not appear to be running."
+        echo "Start the DB container first: rcctl start smarterp_db"
+    fi
+}
+
+rc_start() {
+    rc_pre
+
+    echo "Starting Smart ERP API in chroot ${CHROOT}..."
+
+    # Ensure /dev is populated
+    if [ ! -c "${CHROOT}/dev/null" ]; then
+        cd "${CHROOT}/dev" && /dev/MAKEDEV std 2>/dev/null || true
+    fi
+
+    chroot "${CHROOT}" su -s /bin/sh "${daemon_user}" -c "
+        set -a
+        . ${ENV_FILE}
+        set +a
+        ${daemon} >> /var/log/smarterp/api.log 2>&1 &
+    "
+
+    # Wait for API to be ready
+    local n=0
+    while [ $n -lt 15 ]; do
+        echo '' | nc -w 1 127.0.0.1 3000 >/dev/null 2>&1 && return 0
+        sleep 1
+        n=$((n + 1))
+    done
+    echo "WARNING: API may not have started in time."
+}
+
+rc_stop() {
+    echo "Stopping Smart ERP API..."
+    pkill -f "smart-erp-api" 2>/dev/null || true
+}
+
+rc_check() {
+    pgrep -f "smart-erp-api" >/dev/null 2>&1
+}
+
+rc_cmd $1

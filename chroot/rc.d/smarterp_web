@@ -1,0 +1,47 @@
+#!/bin/ksh
+# Unix Chroot Container — Nginx Web Server (rc.d service)
+# Starts/stops Nginx inside /var/chroot/smarterp-web
+#
+# Install: install -m 555 smarterp_web /etc/rc.d/smarterp_web
+# Enable:  rcctl enable smarterp_web
+# Start:   rcctl start smarterp_web
+
+daemon="/usr/local/sbin/nginx"
+daemon_user="root"
+
+. /etc/rc.d/rc.subr
+
+CHROOT="/var/chroot/smarterp-web"
+NGINX_CONF="/etc/nginx/nginx.conf"
+
+pexp="nginx.*master"
+rc_bg=NO
+rc_reload=YES
+
+rc_start() {
+    echo "Starting Nginx in chroot ${CHROOT}..."
+
+    # Ensure /dev is populated
+    if [ ! -c "${CHROOT}/dev/null" ]; then
+        cd "${CHROOT}/dev" && /dev/MAKEDEV std 2>/dev/null || true
+    fi
+
+    chroot "${CHROOT}" ${daemon} -c ${NGINX_CONF}
+}
+
+rc_stop() {
+    echo "Stopping Nginx in chroot ${CHROOT}..."
+    chroot "${CHROOT}" ${daemon} -s stop 2>/dev/null || true
+}
+
+rc_reload() {
+    echo "Reloading Nginx configuration..."
+    chroot "${CHROOT}" ${daemon} -s reload
+}
+
+rc_check() {
+    chroot "${CHROOT}" ${daemon} -t -c ${NGINX_CONF} >/dev/null 2>&1 && \
+        pgrep -f "nginx.*master" >/dev/null 2>&1
+}
+
+rc_cmd $1
