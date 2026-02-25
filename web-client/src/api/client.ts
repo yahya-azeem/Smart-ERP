@@ -4,6 +4,9 @@ export const apiClient = axios.create({
   baseURL: '/api', // CVE-13: Use relative URL via nginx proxy (no hardcoded port)
   headers: {
     'Content-Type': 'application/json',
+    // Default tenant for login (unauthenticated requests need a tenant context).
+    // After login, setTenantFromToken() updates this from the JWT payload.
+    'x-tenant-id': '11111111-1111-1111-1111-111111111111',
   },
 });
 
