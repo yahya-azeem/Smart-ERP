@@ -15,6 +15,66 @@ use tower_http::cors::{CorsLayer, AllowOrigin};
 use tower_http::limit::RequestBodyLimitLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use state::AppState;
+use argon2::{
+    password_hash::{
+        rand_core::OsRng,
+        PasswordHasher,
+    },
+    Argon2,
+};
+use uuid::Uuid;
+
+const DEFAULT_TENANT_ID: &str = "11111111-1111-1111-1111-111111111111";
+const DEFAULT_ADMIN_ID: &str = "11111111-1111-1111-1111-000000000001";
+
+async fn seed_admin_user(pool: &sqlx::PgPool) {
+    // Check if admin user exists
+    let exists: Option<sqlx::Row> = sqlx::query(
+        "SELECT id FROM users WHERE username = 'admin' AND tenant_id = $1"
+    )
+    .bind(DEFAULT_TENANT_ID)
+    .fetch_optional(pool)
+    .await
+    .ok()
+    .flatten();
+
+    if exists.is_some() {
+        tracing::info!("Admin user already exists");
+        return;
+    }
+
+    // Create default tenant if not exists
+    sqlx::query(
+        "INSERT INTO tenants (id, name) VALUES ($1, 'Default Tenant') ON CONFLICT DO NOTHING"
+    )
+    .bind(DEFAULT_TENANT_ID)
+    .execute(pool)
+    .await
+    .ok();
+
+    // Generate password hash for "admin123"
+    let argon2 = Argon2::default();
+    let salt = argon2::password_hash::SaltString::generate(&mut OsRng);
+    let password_hash = argon2
+        .hash_password(b"admin123", &salt)
+        .map(|h| h.to_string())
+        .unwrap_or_else(|_| "".to_string());
+
+    // Create admin user
+    let result = sqlx::query(
+        "INSERT INTO users (id, tenant_id, username, password_hash, role) VALUES ($1, $2, 'admin', $3, 'ADMIN') ON CONFLICT DO NOTHING"
+    )
+    .bind(DEFAULT_ADMIN_ID)
+    .bind(DEFAULT_TENANT_ID)
+    .bind(&password_hash)
+    .execute(pool)
+    .await;
+
+    match result {
+        Ok(_) => tracing::info!("✅ Admin user created (admin/admin123)"),
+        Err(e) => tracing::warn!("Could not create admin user: {}", e),
+    }
+}
 
 #[cfg(target_os = "openbsd")]
 mod openbsd {
@@ -60,6 +120,9 @@ async fn main() {
         .expect("Failed to connect to database");
 
     let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET environment variable must be set — refusing to start with default secret");
+
+    // Seed admin user on first startup
+    seed_admin_user(&pool).await;
 
     let state = AppState { pool, jwt_secret };
 
@@ -115,15 +178,24 @@ async fn main() {
         .route_layer(axum_middleware::from_fn_with_state(state.clone(), middleware::auth::auth_middleware));
 
     // Merge Routes
+    // Get allowed origins from environment or use defaults
+    let allowed_origins = std::env::var("ALLOWED_ORIGINS")
+        .unwrap_or_else(|_| "http://localhost:8080,http://localhost:3000".to_string());
+    
+    let origin_list: Vec<&str> = allowed_origins.split(',').collect();
+    let mut allow_origin_list = Vec::new();
+    for o in &origin_list {
+        if let Ok(origin) = o.trim().parse() {
+            allow_origin_list.push(origin);
+        }
+    }
+    
     let app = Router::new()
         .merge(public_routes)
         .merge(protected_routes)
         .layer(CorsLayer::new()
-            .allow_origin(AllowOrigin::list([
-                "http://localhost:8080".parse().unwrap(),
-                "http://localhost:3000".parse().unwrap(),
-            ]))
-            .allow_methods([axum::http::Method::GET, axum::http::Method::POST, axum::http::Method::DELETE, axum::http::Method::PUT, axum::http::Method::PATCH, axum::http::Method::OPTIONS])
+            .allow_origin(AllowOrigin::list(allow_origin_list))
+            .allow_methods([axum::http::Method::GET, axum::http::Method::POST, axum::http::Method::DELETE, axum::http::Method::PUT, axum::http::Method::PATCH, axum::http::Method::OPTIONS]))
             .allow_headers([
                 axum::http::header::CONTENT_TYPE,
                 axum::http::header::AUTHORIZATION,

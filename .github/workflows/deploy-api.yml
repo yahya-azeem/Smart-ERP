@@ -56,7 +56,7 @@ jobs:
           image: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           region: ${{ env.REGION }}
           flags: '--allow-unauthenticated --port=3000'
-          env_vars: DATABASE_URL=${{ secrets.DATABASE_URL }}
+          env_vars: DATABASE_URL=${{ secrets.DATABASE_URL }},ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}
 
       - name: Update Supabase (if needed)
         run: |

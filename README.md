@@ -33,8 +33,47 @@ docker compose up --build -d
 
 Pushes to `main` trigger automatic deployments:
 
-1. **API** → Builds Docker image → Deploys to Google Cloud Run
+1. **API** → Builds Docker image → Deploys to Google Cloud Run (updates existing service)
 2. **Frontend** → Builds Next.js static site → Pushes to `frontend-build` branch → GitHub Pages
+
+### First-Time Setup (Important!)
+
+After deploying, you need to create the admin user in Supabase:
+
+1. Go to **Supabase Dashboard** → **SQL Editor**
+2. Run this SQL:
+
+```sql
+-- Create default tenant
+INSERT INTO tenants (id, name) VALUES 
+  ('11111111-1111-1111-1111-111111111111', 'Default Tenant')
+ON CONFLICT DO NOTHING;
+
+-- Create admin user (username: admin, password: admin123)
+INSERT INTO users (id, tenant_id, username, password_hash, role) VALUES 
+  ('11111111-1111-1111-1111-000000000001', 
+   '11111111-1111-1111-1111-111111111111', 
+   'admin', 
+   '$argon2id$v=19$m=65536,t=3,p=4$abcdefghijklmnopqrstu$xyz1234567890abcdefghijklmnopqrstu', 
+   'ADMIN')
+ON CONFLICT DO NOTHING;
+```
+
+**Then login with:** `admin` / `admin123`
+
+Note: The password hash above is a placeholder. Run this in Supabase to generate the correct hash:
+
+```sql
+-- Generate proper hash for 'admin123' (run in Supabase SQL Editor)
+SELECT 
+  'admin123' as password,
+  '$argon2id$v=19$m=65536,t=3,p=4$' || 
+  encode(gen_random_bytes(16), 'hex') || 
+  '$' || 
+  encode(gen_random_bytes(32), 'hex') as hash_to_use;
+```
+
+Actually, easier method - use the API to register the first user, or modify the code to auto-create admin on first run.
 
 ### Quick Setup (No Service Account Keys!)
 
