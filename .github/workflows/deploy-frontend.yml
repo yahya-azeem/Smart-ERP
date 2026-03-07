@@ -4,9 +4,7 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'web-client/**'
-      - '!web-client/**/*.md'
+  workflow_dispatch:
 
 permissions:
   contents: 'write'

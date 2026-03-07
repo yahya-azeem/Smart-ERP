@@ -4,9 +4,7 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'backend/**'
-      - '!backend/**/*.md'
+  workflow_dispatch:
 
 env:
   REGION: ${{ secrets.GCP_REGION }}
