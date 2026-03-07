@@ -1,5 +1,7 @@
 # Smart ERP (Rust Edition)
 
+[![Deploy to Cloud Run](https://github.com/yahya-azeem/Smart-ERP/actions/workflows/deploy-api.yml/badge.svg)](https://github.com/yahya-azeem/Smart-ERP/actions)
+
 A high-performance, **QuickBooks Desktop-grade** ERP system tailored for **Leather Manufacturing**.
 Built with **Rust** (Backend) and **Next.js** (Frontend) for maximum speed, safety, and scalability.
 
