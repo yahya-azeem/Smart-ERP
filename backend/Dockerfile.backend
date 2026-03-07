@@ -10,10 +10,14 @@ RUN cargo chef prepare --recipe-path recipe.json
 # Builder stage: Build dependencies and then the app
 # Use musl target for fully static binary (works with Alpine)
 FROM chef AS builder
+# Install musl-gcc for static linking
+RUN apt-get update && apt-get install -y musl-tools && rm -rf /var/lib/apt/lists/*
 RUN rustup target add x86_64-unknown-linux-musl
+# Set CC for musl so cc-rs can find the compiler
+ENV CC_x86_64_unknown_linux_musl=musl-gcc
 COPY --from=planner /app/recipe.json recipe.json
-# Build dependencies - this is cached!
-RUN cargo chef cook --release --recipe-path recipe.json
+# Build dependencies - this is cached! (must specify musl target here too)
+RUN cargo chef cook --release --recipe-path recipe.json --target x86_64-unknown-linux-musl
 # Build application with musl for static linking
 COPY . .
 RUN cargo build --release --bin api --target x86_64-unknown-linux-musl
