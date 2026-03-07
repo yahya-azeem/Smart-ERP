@@ -195,7 +195,7 @@ async fn main() {
         .merge(protected_routes)
         .layer(CorsLayer::new()
             .allow_origin(AllowOrigin::list(allow_origin_list))
-            .allow_methods([axum::http::Method::GET, axum::http::Method::POST, axum::http::Method::DELETE, axum::http::Method::PUT, axum::http::Method::PATCH, axum::http::Method::OPTIONS]))
+            .allow_methods([axum::http::Method::GET, axum::http::Method::POST, axum::http::Method::DELETE, axum::http::Method::PUT, axum::http::Method::PATCH, axum::http::Method::OPTIONS])
             .allow_headers([
                 axum::http::header::CONTENT_TYPE,
                 axum::http::header::AUTHORIZATION,
