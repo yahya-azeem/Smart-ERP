@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, ReactNode, createContext, useContext } from 'react';
+import React, { useState } from 'react';
 import {
   AppShell,
   Burger,
@@ -15,158 +15,26 @@ import {
   useMantineColorScheme,
   ActionIcon,
   Tooltip,
+  TextInput,
+  PasswordInput,
+  Button,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
   IconHome,
   IconUsers,
-  IconFileInvoice,
-  IconFileText,
-  IconReceipt,
-  IconCreditCard,
   IconBuildingStore,
-  IconTruck,
-  IconShoppingCart,
   IconPackage,
   IconUsersGroup,
-  IconCash,
   IconReportAnalytics,
-  IconChartBar,
-  IconTool,
-  IconClipboardList,
   IconBuildingFactory2,
-  IconBox,
+  IconScale,
   IconSun,
   IconMoon,
   IconLogout,
-  IconCoin,
-  IconScale,
-  IconListDetails,
-  IconCalculator,
 } from '@tabler/icons-react';
-
-interface User {
-  id: string;
-  username: string;
-  role: string;
-  tenant_id: string;
-}
-
-interface Tab {
-  id: string;
-  title: string;
-  component: ReactNode;
-}
-
-interface WindowManagerContextType {
-  tabs: Tab[];
-  activeTabId: string | null;
-  openTab: (id: string, title: string, component: ReactNode) => void;
-  closeTab: (id: string) => void;
-  setActiveTabId: (id: string) => void;
-}
-
-const WindowManagerContext = createContext<WindowManagerContextType | null>(null);
-
-export function useWindowManager() {
-  const ctx = useContext(WindowManagerContext);
-  if (!ctx) throw new Error('useWindowManager must be used within provider');
-  return ctx;
-}
-
-function WindowManagerProvider({ children }: { children: ReactNode }) {
-  const [tabs, setTabs] = useState<Tab[]>([]);
-  const [activeTabId, setActiveTabId] = useState<string | null>(null);
-
-  const openTab = (id: string, title: string, component: ReactNode) => {
-    setTabs((prev) => {
-      if (prev.some((t) => t.id === id)) {
-        setActiveTabId(id);
-        return prev;
-      }
-      return [...prev, { id, title, component }];
-    });
-    setActiveTabId(id);
-  };
-
-  const closeTab = (id: string) => {
-    setTabs((prev) => {
-      const newTabs = prev.filter((t) => t.id !== id);
-      if (activeTabId === id && newTabs.length > 0) {
-        setActiveTabId(newTabs[newTabs.length - 1].id);
-      } else if (newTabs.length === 0) {
-        setActiveTabId(null);
-      }
-      return newTabs;
-    });
-  };
-
-  return (
-    <WindowManagerContext.Provider value={{ tabs, activeTabId, openTab, closeTab, setActiveTabId }}>
-      {children}
-    </WindowManagerContext.Provider>
-  );
-}
-
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
-  logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextType | null>(null);
-
-function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
-}
-
-function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('smart_erp_user');
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored));
-      } catch {}
-    }
-  }, []);
-
-  const login = async (username: string, password: string): Promise<boolean> => {
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-      const res = await fetch(`${apiUrl}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const userData = { ...data.user, token: data.token };
-        localStorage.setItem('smart_erp_user', JSON.stringify(userData));
-        setUser(userData);
-        return true;
-      }
-    } catch (e) {
-      console.error('Login error:', e);
-    }
-    return false;
-  };
-
-  const logout = () => {
-    localStorage.removeItem('smart_erp_user');
-    setUser(null);
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
+import { AuthProvider, useAuth } from '../src/context/AuthContext';
+import { WindowManagerProvider, useWindowManager } from '../src/context/WindowManagerContext';
 
 const navGroups = [
   {
@@ -249,13 +117,9 @@ function Layout() {
   const { tabs, activeTabId, openTab, closeTab, setActiveTabId } = useWindowManager();
   const { user, logout } = useAuth();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
-  const hasOpened = useRef(false);
 
-  useEffect(() => {
-    if (!hasOpened.current) {
-      hasOpened.current = true;
-      openTab('home', 'Home', <DashboardContent />);
-    }
+  React.useEffect(() => {
+    openTab('home', 'Home', <DashboardContent />);
   }, []);
 
   return (
@@ -386,11 +250,26 @@ function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    const success = await login(username, password);
-    setLoading(false);
-    if (!success) {
-      setError('Invalid credentials');
+    
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const res = await fetch(`${apiUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        login(data.token, data.user);
+      } else {
+        setError('Invalid credentials');
+      }
+    } catch (err) {
+      setError('Connection error. Please try again.');
     }
+    
+    setLoading(false);
   };
 
   return (
@@ -433,12 +312,10 @@ function LoginPage() {
   );
 }
 
-import { TextInput, PasswordInput, Button } from '@mantine/core';
-
 function AppContent() {
-  const { isAuthenticated } = useAuth();
+  const { user, token } = useAuth();
 
-  if (!isAuthenticated) {
+  if (!token) {
     return <LoginPage />;
   }
 
