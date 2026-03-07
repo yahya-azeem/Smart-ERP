@@ -29,16 +29,16 @@ const DEFAULT_ADMIN_ID: &str = "11111111-1111-1111-1111-000000000001";
 
 async fn seed_admin_user(pool: &sqlx::PgPool) {
     // Check if admin user exists
-    let exists: Option<sqlx::Row> = sqlx::query(
-        "SELECT id FROM users WHERE username = 'admin' AND tenant_id = $1"
+    let exists = sqlx::query_scalar::<_, bool>(
+        "SELECT EXISTS(SELECT 1 FROM users WHERE username = 'admin' AND tenant_id = $1)"
     )
     .bind(DEFAULT_TENANT_ID)
-    .fetch_optional(pool)
+    .fetch_one(pool)
     .await
     .ok()
-    .flatten();
+    .unwrap_or(false);
 
-    if exists.is_some() {
+    if exists {
         tracing::info!("Admin user already exists");
         return;
     }
