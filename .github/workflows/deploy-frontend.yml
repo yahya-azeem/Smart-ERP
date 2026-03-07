@@ -1,0 +1,106 @@
+name: Deploy Frontend to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'web-client/**'
+      - '!web-client/**/*.md'
+
+permissions:
+  contents: 'write'
+  id-token: 'write'
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    environment:
+      name: Environment
+      url: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (to get API URL)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Get API URL from Cloud Run
+        id: api-url
+        run: |
+          API_URL=$(gcloud run services describe smart-erp-api --platform managed --region ${{ secrets.GCP_REGION }} --format 'value(status.url)' 2>/dev/null || echo "")
+          if [ -z "$API_URL" ]; then
+            echo "Warning: Could not get API URL from Cloud Run. Using fallback."
+            echo "api_url=${{ secrets.API_URL_FALLBACK }}" >> $GITHUB_OUTPUT
+            echo "Using fallback API URL: ${{ secrets.API_URL_FALLBACK }}"
+          else
+            echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+            echo "API URL: $API_URL"
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: web-client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: web-client
+        run: npm ci
+
+      - name: Build Next.js static site
+        working-directory: web-client
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ steps.api-url.outputs.api_url }}
+          NEXT_PUBLIC_BASE_PATH: ''
+
+      - name: Setup Git config
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Checkout frontend-build branch
+        run: |
+          git fetch origin frontend-build || true
+          git checkout -B frontend-build origin/frontend-build 2>/dev/null || git checkout -B frontend-build
+
+      - name: Copy build output to root
+        run: |
+          rm -rf *
+          rm -rf .[^.]*
+          cp -r web-client/out/* .
+          cp -r web-client/out/.* . 2>/dev/null || true
+
+      - name: Commit and push
+        run: |
+          git add -A
+          git diff --staged --quiet || git commit -m "Deploy static frontend - ${{ github.sha }}"
+          git push origin frontend-build --force
+
+      - name: Deploy to GitHub Pages
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createPages({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              build_type: 'workflow',
+              source: {
+                branch: 'frontend-build',
+                path: '/'
+              }
+            });
+
+      - name: Summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- API URL: ${{ steps.api-url.outputs.api_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend built successfully" >> $GITHUB_STEP_SUMMARY
+          echo "- Deployed to branch: \`frontend-build\`" >> $GITHUB_STEP_SUMMARY
+          echo "- GitHub Pages URL: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/" >> $GITHUB_STEP_SUMMARY

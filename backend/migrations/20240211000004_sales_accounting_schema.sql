@@ -1,6 +1,6 @@
 -- Customers Table
 CREATE TABLE customers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
@@ -21,7 +21,7 @@ CREATE TYPE sales_order_status AS ENUM (
 
 -- Sales Orders Table
 CREATE TABLE sales_orders (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
     order_number VARCHAR(50) NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE sales_orders (
 
 -- Sales Order Lines Table
 CREATE TABLE sales_order_lines (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_id UUID NOT NULL REFERENCES sales_orders(id) ON DELETE CASCADE,
     product_id UUID NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
     quantity DECIMAL(10, 2) NOT NULL,
@@ -57,7 +57,7 @@ CREATE TYPE invoice_status AS ENUM (
 
 -- Invoices Table
 CREATE TABLE invoices (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
     sales_order_id UUID REFERENCES sales_orders(id) ON DELETE SET NULL,
@@ -82,7 +82,7 @@ CREATE TYPE payment_method AS ENUM (
 
 -- Payments Table
 CREATE TABLE payments (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     invoice_id UUID NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
     amount DECIMAL(12, 2) NOT NULL,

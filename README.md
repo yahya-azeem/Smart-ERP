@@ -1,11 +1,11 @@
 # Smart ERP (Rust Edition)
 
 A high-performance, **QuickBooks Desktop-grade** ERP system tailored for **Leather Manufacturing**.
-Built with **Rust** (Backend) and **React** (Frontend) for maximum speed, safety, and scalability.
+Built with **Rust** (Backend) and **Next.js** (Frontend) for maximum speed, safety, and scalability.
 
 ## Quick Start
 
-### Docker (Recommended)
+### Local Development (Docker)
 
 ```bash
 docker compose up --build -d
@@ -18,23 +18,50 @@ docker compose up --build -d
 
 **Login:** `admin` / `admin123`
 
-### OpenBSD (Unix Chroot Container)
-
-```bash
-doas ./chroot_deploy.sh
-```
-
-See [OPENBSD_INSTALL.md](OPENBSD_INSTALL.md) for full chroot container documentation.
-
 ## Tech Stack
 
 | Component | Technology |
 |---|---|
 | **Backend** | Rust (Axum + SQLx + Argon2 + JWT) |
-| **Frontend** | React + TypeScript + Mantine v7 |
-| **Database** | PostgreSQL 16 |
-| **Docker** | Multi-stage builds, docker compose |
-| **OpenBSD** | chroot(2) + pledge(2) + unveil(2) |
+| **Frontend** | Next.js 14 + React 18 + Mantine v7 |
+| **Database** | Supabase (PostgreSQL) |
+| **API Hosting** | Google Cloud Run |
+| **Frontend Hosting** | GitHub Pages |
+| **Docker** | Multi-stage Alpine builds |
+
+## Deployment (CI/CD)
+
+Pushes to `main` trigger automatic deployments:
+
+1. **API** → Builds Docker image → Deploys to Google Cloud Run
+2. **Frontend** → Builds Next.js static site → Pushes to `frontend-build` branch → GitHub Pages
+
+### Quick Setup (No Service Account Keys!)
+
+Run this locally - it uses your Google login:
+
+```bash
+chmod +x setup-gcp-workload-identity.sh
+./setup-gcp-workload-identity.sh
+```
+
+Follow the prompts. It will ask for:
+- GCP Project ID
+- GCP Region
+- GitHub Username
+
+Then add the 4 printed secrets to GitHub (Settings → Secrets → Actions).
+
+### Manual Setup (if needed)
+
+```bash
+# 1. Login to GCP
+gcloud auth login
+gcloud config set project YOUR_PROJECT_ID
+
+# 2. Run the setup script
+./setup-gcp-workload-identity.sh
+```
 
 ## Features
 
@@ -43,40 +70,33 @@ See [OPENBSD_INSTALL.md](OPENBSD_INSTALL.md) for full chroot container documenta
 - **Accounting** — Invoices, payments, journal entries, chart of accounts
 - **Reports** — P&L, balance sheet, trial balance, AR/AP aging, general ledger
 - **Analytics** — Real-time dashboards, sales trends
-- **Security** — RBAC, rate limiting, CORS, session auth, non-root containers
+- **Security** — RBAC, rate limiting, CORS, JWT auth, non-root containers
 
 ## Project Structure
 
 ```
 smart-erp/
 ├── backend/                    # Rust Workspace
-│   ├── api/                    # REST API (Axum handlers, middleware, routing)
-│   ├── core/                   # Domain models & business logic
-│   ├── infrastructure/         # Database repositories (SQLx)
-│   ├── shared/                 # Shared utilities
-│   └── migrations/             # SQL schema migrations
-├── web-client/                 # React Frontend
-│   ├── src/components/         # Layout, data tables
-│   ├── src/pages/              # Feature pages
-│   ├── src/context/            # Auth, window manager
-│   └── src/api/                # API client
-├── chroot/                     # OpenBSD Chroot Container system
-│   ├── lib/                    # Chroot library functions
-│   ├── containers/             # Container definitions (db, api, web)
-│   └── rc.d/                   # rc.d service scripts
-├── docker-compose.yml          # Docker deployment
-├── docker-compose.prod.yml     # Production (pre-built images)
-├── chroot_deploy.sh            # OpenBSD chroot deployment
-└── publish_release.sh          # GHCR image publishing
+│   ├── api/                   # REST API (Axum handlers, middleware, routing)
+│   ├── core/                  # Domain models & business logic
+│   ├── infrastructure/        # Database repositories (SQLx)
+│   ├── shared/                # Shared utilities
+│   ├── migrations/            # SQL schema migrations
+│   └── Dockerfile.backend     # Multi-stage Alpine Docker build
+├── web-client/                # Next.js Frontend
+│   ├── app/                   # Next.js App Router pages
+│   ├── src/components/        # Layout, data tables
+│   ├── src/context/          # Auth, window manager
+│   ├── src/api/              # API client
+│   ├── next.config.js        # Static export config
+│   └── Dockerfile.frontend   # Next.js build
+├── .github/
+│   └── workflows/
+│       ├── deploy-api.yml    # Cloud Run deployment
+│       └── deploy-frontend.yml # GitHub Pages deployment
+├── docker-compose.yml          # Local development
+└── docker-compose.prod.yml     # Production (pre-built images)
 ```
-
-## Deployment Options
-
-| Method | Command | Best For |
-|---|---|---|
-| **Docker (dev)** | `docker compose up --build` | Development, testing |
-| **Docker (prod)** | `docker compose -f docker-compose.prod.yml up` | Production with pre-built images |
-| **OpenBSD chroot** | `doas ./chroot_deploy.sh` | Maximum security, BSD servers |
 
 ## License
 

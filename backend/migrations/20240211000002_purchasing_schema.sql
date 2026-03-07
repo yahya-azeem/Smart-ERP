@@ -1,6 +1,6 @@
 -- Suppliers Table
 CREATE TABLE suppliers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
@@ -22,7 +22,7 @@ CREATE TYPE purchase_order_status AS ENUM (
 
 -- Purchase Orders Table
 CREATE TABLE purchase_orders (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     supplier_id UUID NOT NULL REFERENCES suppliers(id) ON DELETE RESTRICT,
     order_number VARCHAR(50) NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE purchase_orders (
 
 -- Purchase Order Lines Table
 CREATE TABLE purchase_order_lines (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_id UUID NOT NULL REFERENCES purchase_orders(id) ON DELETE CASCADE,
     product_id UUID NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
     quantity DECIMAL(10, 2) NOT NULL,

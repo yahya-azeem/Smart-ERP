@@ -1,6 +1,6 @@
 -- Recipes Table (Bill of Materials)
 CREATE TABLE recipes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     output_product_id UUID NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
@@ -13,7 +13,7 @@ CREATE TABLE recipes (
 
 -- Recipe Ingredients Table
 CREATE TABLE recipe_ingredients (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     recipe_id UUID NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
     input_product_id UUID NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
     quantity DECIMAL(10, 2) NOT NULL, -- Amount needed per recipe execution
@@ -31,7 +31,7 @@ CREATE TYPE work_order_status AS ENUM (
 
 -- Work Orders Table
 CREATE TABLE work_orders (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     recipe_id UUID NOT NULL REFERENCES recipes(id) ON DELETE RESTRICT,
     quantity DECIMAL(10, 2) NOT NULL DEFAULT 1.00, -- Number of recipe executions (batches)
