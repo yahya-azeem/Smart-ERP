@@ -54,7 +54,7 @@ jobs:
           image: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           region: ${{ env.REGION }}
           flags: '--allow-unauthenticated --port=3000'
-          env_vars: DATABASE_URL=${{ secrets.DATABASE_URL }},ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}
+          env_vars: DATABASE_URL=${{ secrets.DATABASE_URL }},ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }},JWT_SECRET=${{ secrets.JWT_SECRET }}
 
       - name: Update Supabase (if needed)
         run: |
@@ -70,17 +70,3 @@ jobs:
           URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --platform managed --region ${{ env.REGION }} --format 'value(status.url)')
           echo "url=$URL" >> $GITHUB_OUTPUT
           echo "API deployed to: $URL"
-
-      - name: Update GitHub deployment status
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { DATA: { deployment_status } } = await github.rest.repos.createDeploymentStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              deployment_id: ${{ steps.deployment.outputs.id }},
-              state: '${{ job.status }}',
-              target_url: '${{ steps.cloudrun-url.outputs.url }}',
-              description: 'API deployed to Cloud Run'
-            });
