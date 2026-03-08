@@ -36,81 +36,92 @@ import {
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { WindowManagerProvider, useWindowManager } from '../src/context/WindowManagerContext';
 
+import { Dashboard } from '../src/views/Dashboard';
+import { CustomerCenter } from '../src/views/CustomerCenter';
+import { Purchasing } from '../src/views/Purchasing';
+import { Accounting } from '../src/views/Accounting';
+import { ProductList } from '../src/views/ProductList';
+import { Bills } from '../src/views/Bills';
+import { ReportCenter } from '../src/views/ReportCenter';
+import { Employees } from '../src/views/Employees';
+import { Payroll } from '../src/views/Payroll';
+import { Manufacturing } from '../src/views/Manufacturing';
+import { ChartOfAccounts } from '../src/views/ChartOfAccounts';
+import { JournalEntries } from '../src/views/JournalEntries';
+import { BankReconciliation } from '../src/views/BankReconciliation';
+import { SalesReceipts } from '../src/views/SalesReceipts';
+import { SalesTaxManagement } from '../src/views/SalesTaxManagement';
+import { CreditMemos } from '../src/views/CreditMemos';
+import { Estimates } from '../src/views/Estimates';
+import { InventoryActivities } from '../src/views/InventoryActivities';
+import { Checks } from '../src/views/Checks';
+
 const navGroups = [
   {
     label: 'Customers',
     icon: IconUsers,
     items: [
-      { label: 'Customer Center', id: 'customers' },
-      { label: 'Invoices', id: 'invoices' },
-      { label: 'Estimates', id: 'estimates' },
-      { label: 'Sales Receipts', id: 'sales-receipts' },
-      { label: 'Credit Memos', id: 'credit-memos' },
+      { label: 'Customer Center', id: 'customers', component: <CustomerCenter /> },
+      { label: 'Invoices', id: 'invoices', component: <Accounting /> },
+      { label: 'Estimates', id: 'estimates', component: <Estimates /> },
+      { label: 'Sales Receipts', id: 'sales-receipts', component: <SalesReceipts /> },
+      { label: 'Credit Memos', id: 'credit-memos', component: <CreditMemos /> },
     ],
   },
   {
     label: 'Vendors',
     icon: IconBuildingStore,
     items: [
-      { label: 'Vendor Center', id: 'purchasing' },
-      { label: 'Purchase Orders', id: 'purchase-orders' },
-      { label: 'Enter Bills', id: 'enter-bills' },
-      { label: 'Pay Bills', id: 'pay-bills' },
+      { label: 'Vendor Center', id: 'purchasing', component: <Purchasing /> },
+      { label: 'Purchase Orders', id: 'purchase-orders', component: <Purchasing /> },
+      { label: 'Enter Bills', id: 'enter-bills', component: <Bills /> },
+      { label: 'Pay Bills', id: 'pay-bills', component: <Bills /> },
     ],
   },
   {
     label: 'Employees',
     icon: IconUsersGroup,
     items: [
-      { label: 'Employee Center', id: 'employees' },
-      { label: 'Payroll', id: 'payroll' },
+      { label: 'Employee Center', id: 'employees', component: <Employees /> },
+      { label: 'Payroll', id: 'payroll', component: <Payroll /> },
     ],
   },
   {
     label: 'Inventory',
     icon: IconPackage,
     items: [
-      { label: 'Item List', id: 'products' },
-      { label: 'Inventory Activities', id: 'inventory-activities' },
+      { label: 'Item List', id: 'products', component: <ProductList /> },
+      { label: 'Inventory Activities', id: 'inventory-activities', component: <InventoryActivities /> },
     ],
   },
   {
     label: 'Manufacturing',
     icon: IconBuildingFactory2,
     items: [
-      { label: 'Recipes / BOMs', id: 'manufacturing' },
-      { label: 'Work Orders', id: 'work-orders' },
+      { label: 'Recipes / BOMs', id: 'manufacturing', component: <Manufacturing /> },
+      { label: 'Work Orders', id: 'work-orders', component: <Manufacturing /> },
     ],
   },
   {
     label: 'Banking & Accounting',
     icon: IconScale,
     items: [
-      { label: 'Chart of Accounts', id: 'chart-of-accounts' },
-      { label: 'Journal Entries', id: 'journal-entries' },
-      { label: 'Bank Deposits', id: 'bank-deposits' },
-      { label: 'Write Checks', id: 'write-checks' },
-      { label: 'Bank Reconciliation', id: 'bank-recon' },
-      { label: 'Sales Tax', id: 'sales-tax' },
+      { label: 'Chart of Accounts', id: 'chart-of-accounts', component: <ChartOfAccounts /> },
+      { label: 'Journal Entries', id: 'journal-entries', component: <JournalEntries /> },
+      { label: 'Bank Deposits', id: 'bank-deposits', component: <Accounting /> },
+      { label: 'Write Checks', id: 'write-checks', component: <Checks /> },
+      { label: 'Bank Reconciliation', id: 'bank-recon', component: <BankReconciliation /> },
+      { label: 'Sales Tax', id: 'sales-tax', component: <SalesTaxManagement /> },
     ],
   },
   {
     label: 'Reports',
     icon: IconReportAnalytics,
     items: [
-      { label: 'Report Center', id: 'reports' },
+      { label: 'Report Center', id: 'reports', component: <ReportCenter /> },
     ],
   },
 ];
-
-function DashboardContent() {
-  return (
-    <div style={{ padding: 20 }}>
-      <Title order={2} mb="md">Dashboard</Title>
-      <Text c="dimmed">Welcome to Smart ERP</Text>
-    </div>
-  );
-}
 
 function Layout() {
   const [opened, { toggle }] = useDisclosure();
@@ -119,7 +130,7 @@ function Layout() {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
 
   React.useEffect(() => {
-    openTab('home', 'Home', <DashboardContent />);
+    openTab('home', 'Home', <Dashboard />);
   }, []);
 
   return (
@@ -159,7 +170,7 @@ function Layout() {
           <NavLink
             label="Home"
             leftSection={<IconHome size={18} />}
-            onClick={() => openTab('home', 'Home', <DashboardContent />)}
+            onClick={() => openTab('home', 'Home', <Dashboard />)}
             active={activeTabId === 'home'}
             variant="filled"
             style={{ fontWeight: 500 }}
@@ -179,7 +190,7 @@ function Layout() {
                 <NavLink
                   key={item.id}
                   label={item.label}
-                  onClick={() => openTab(item.id, item.label, <div style={{ padding: 20 }}><Title order={3}>{item.label}</Title><Text c="dimmed" mt="md">Page: {item.id}</Text></div>)}
+                  onClick={() => openTab(item.id, item.label, item.component)}
                   active={activeTabId === item.id}
                   variant="filled"
                   style={{ fontSize: 13 }}

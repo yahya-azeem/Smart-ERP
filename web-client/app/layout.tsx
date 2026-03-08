@@ -14,6 +14,8 @@ export const metadata = {
   description: 'Leather Manufacturing ERP System',
 };
 
+import { QueryProvider } from './QueryProvider';
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
@@ -23,7 +25,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <MantineProvider defaultColorScheme="dark" theme={theme}>
           <Notifications />
-          {children}
+          <QueryProvider>
+            {children}
+          </QueryProvider>
         </MantineProvider>
       </body>
     </html>
