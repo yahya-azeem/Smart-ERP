@@ -36,6 +36,7 @@
   "exclude": [
     "node_modules",
     "src/main.tsx",
-    "src/App.tsx"
+    "src/App.tsx",
+    "src/pages"
   ]
 }
