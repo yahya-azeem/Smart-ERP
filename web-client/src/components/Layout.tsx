@@ -44,25 +44,25 @@ import {
   IconCalculator,
 } from '@tabler/icons-react';
 import { useWindowManager } from '../context/WindowManagerContext';
-import { ProductList } from '../pages/ProductList';
-import { Dashboard } from '../pages/Dashboard';
-import { CustomerCenter } from '../pages/CustomerCenter';
-import { Purchasing } from '../pages/Purchasing';
-import { Manufacturing } from '../pages/Manufacturing';
-import { Accounting } from '../pages/Accounting';
-import { ChartOfAccounts } from '../pages/ChartOfAccounts';
-import { Employees } from '../pages/Employees';
-import { Estimates } from '../pages/Estimates';
-import { Bills } from '../pages/Bills';
-import { SalesReceipts } from '../pages/SalesReceipts';
-import { CreditMemos } from '../pages/CreditMemos';
-import { JournalEntries } from '../pages/JournalEntries';
-import { Checks } from '../pages/Checks';
-import { ReportCenter } from '../pages/ReportCenter';
-import { Payroll } from '../pages/Payroll';
-import { InventoryActivities } from '../pages/InventoryActivities';
-import { BankReconciliation } from '../pages/BankReconciliation';
-import { SalesTaxManagement } from '../pages/SalesTaxManagement';
+import { ProductList } from '../views/ProductList';
+import { Dashboard } from '../views/Dashboard';
+import { CustomerCenter } from '../views/CustomerCenter';
+import { Purchasing } from '../views/Purchasing';
+import { Manufacturing } from '../views/Manufacturing';
+import { Accounting } from '../views/Accounting';
+import { ChartOfAccounts } from '../views/ChartOfAccounts';
+import { Employees } from '../views/Employees';
+import { Estimates } from '../views/Estimates';
+import { Bills } from '../views/Bills';
+import { SalesReceipts } from '../views/SalesReceipts';
+import { CreditMemos } from '../views/CreditMemos';
+import { JournalEntries } from '../views/JournalEntries';
+import { Checks } from '../views/Checks';
+import { ReportCenter } from '../views/ReportCenter';
+import { Payroll } from '../views/Payroll';
+import { InventoryActivities } from '../views/InventoryActivities';
+import { BankReconciliation } from '../views/BankReconciliation';
+import { SalesTaxManagement } from '../views/SalesTaxManagement';
 import { useAuth } from '../context/AuthContext';
 
 interface NavItem {

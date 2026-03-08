@@ -1,5 +1,5 @@
 import { Layout } from './components/Layout';
-import { Login } from './pages/Login';
+import { Login } from './views/Login';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WindowManagerProvider } from './context/WindowManagerContext';
 
