@@ -56,6 +56,7 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.api-url.outputs.api_url }}
           NEXT_PUBLIC_BASE_PATH: ''
+          CI: false
 
       - name: Setup Git config
         run: |
