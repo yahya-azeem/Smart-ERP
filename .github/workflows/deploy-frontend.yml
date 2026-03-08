@@ -88,10 +88,9 @@ jobs:
         with:
           script: |
             try {
-              await github.rest.repos.createPages({
+              await github.rest.repos.createPagesSite({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                build_type: 'workflow',
                 source: {
                   branch: 'frontend-build',
                   path: '/'
@@ -99,8 +98,17 @@ jobs:
               });
               console.log('GitHub Pages created successfully');
             } catch (error) {
-              if (error.status === 422) {
-                console.log('GitHub Pages already configured, skipping creation');
+              if (error.status === 409 || error.status === 422) {
+                console.log('GitHub Pages already configured, updating source...');
+                await github.rest.repos.updateInformationAboutPagesSite({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  source: {
+                    branch: 'frontend-build',
+                    path: '/'
+                  }
+                });
+                console.log('GitHub Pages source updated');
               } else {
                 throw error;
               }
