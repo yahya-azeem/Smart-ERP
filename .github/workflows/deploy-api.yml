@@ -52,6 +52,8 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false
+          sbom: false
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
