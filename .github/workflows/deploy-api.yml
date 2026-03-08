@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
 
 env:
-  REGION: ${{ secrets.GCP_REGION }}
+  REGION: us-central1
   SERVICE_NAME: smart-erp-api
-  IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT_ID }}/smart-erp-api
+  IMAGE_NAME: us-central1-docker.pkg.dev/wide-ratio-423022-e8/smart-erp-api
 
 jobs:
   deploy-api:
@@ -36,7 +36,7 @@ jobs:
       - name: Configure Docker authentication
         uses: docker/login-action@v3
         with:
-          registry: gcr.io
+          registry: us-central1-docker.pkg.dev
           username: oauth2accesstoken
           password: ${{ steps.auth.outputs.access_token }}
 
