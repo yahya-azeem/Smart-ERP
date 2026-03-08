@@ -22,6 +22,9 @@ const DEFAULT_TENANT_ID: &str = "11111111-1111-1111-1111-111111111111";
 const DEFAULT_ADMIN_ID: &str = "11111111-1111-1111-1111-000000000001";
 
 async fn seed_admin_user(pool: &sqlx::PgPool) {
+    let tenant_id = Uuid::parse_str(DEFAULT_TENANT_ID).unwrap();
+    let admin_id = Uuid::parse_str(DEFAULT_ADMIN_ID).unwrap();
+
     // Step 1: Ensure tenants table exists (users has FK to tenants)
     if let Err(e) = sqlx::query(
         "CREATE TABLE IF NOT EXISTS tenants (
@@ -63,23 +66,23 @@ async fn seed_admin_user(pool: &sqlx::PgPool) {
     sqlx::query(
         "INSERT INTO tenants (id, name) VALUES ($1, 'Default Tenant') ON CONFLICT DO NOTHING"
     )
-    .bind(DEFAULT_TENANT_ID)
+    .bind(tenant_id)
     .execute(pool)
     .await
     .ok();
 
-    // Generate bcrypt hash for "admin123"
+    // Step 5: Generate bcrypt hash for "admin123"
     let password_hash = hash("admin123", DEFAULT_COST)
         .unwrap_or_else(|_| "".to_string());
 
-    // Upsert admin user — always update password_hash to ensure it's valid bcrypt
+    // Step 6: Upsert admin user
     let result = sqlx::query(
         "INSERT INTO users (id, tenant_id, username, password_hash, role) \
          VALUES ($1, $2, 'admin', $3, 'ADMIN') \
          ON CONFLICT (tenant_id, username) DO UPDATE SET password_hash = $3, updated_at = NOW()"
     )
-    .bind(DEFAULT_ADMIN_ID)
-    .bind(DEFAULT_TENANT_ID)
+    .bind(admin_id)
+    .bind(tenant_id)
     .bind(&password_hash)
     .execute(pool)
     .await;
