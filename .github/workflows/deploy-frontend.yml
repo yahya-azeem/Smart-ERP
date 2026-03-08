@@ -76,6 +76,7 @@ jobs:
           find . -maxdepth 1 ! -name '.' ! -name '..' ! -name '.git' -exec rm -rf {} +
           cp -r /tmp/out/* .
           cp -r /tmp/out/.* . 2>/dev/null || true
+          touch .nojekyll
 
       - name: Commit and push
         run: |
