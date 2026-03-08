@@ -84,6 +84,7 @@ jobs:
           git push origin frontend-build --force
 
       - name: Deploy to GitHub Pages
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
@@ -100,17 +101,23 @@ jobs:
             } catch (error) {
               if (error.status === 409 || error.status === 422) {
                 console.log('GitHub Pages already configured, updating source...');
-                await github.rest.repos.updateInformationAboutPagesSite({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  source: {
-                    branch: 'frontend-build',
-                    path: '/'
-                  }
-                });
-                console.log('GitHub Pages source updated');
+                try {
+                  await github.rest.repos.updateInformationAboutPagesSite({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    source: {
+                      branch: 'frontend-build',
+                      path: '/'
+                    }
+                  });
+                  console.log('GitHub Pages source updated');
+                } catch (updateError) {
+                  console.log('Could not update Pages config (may need manual setup):', updateError.message);
+                }
+              } else if (error.status === 403) {
+                console.log('Insufficient permissions to configure Pages. Please configure manually in repo Settings > Pages.');
               } else {
-                throw error;
+                console.log('Could not configure Pages:', error.message);
               }
             }
 
