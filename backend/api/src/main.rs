@@ -22,8 +22,21 @@ const DEFAULT_TENANT_ID: &str = "11111111-1111-1111-1111-111111111111";
 const DEFAULT_ADMIN_ID: &str = "11111111-1111-1111-1111-000000000001";
 
 async fn seed_admin_user(pool: &sqlx::PgPool) {
-    // Ensure users table exists
-    sqlx::query(
+    // Step 1: Ensure tenants table exists (users has FK to tenants)
+    if let Err(e) = sqlx::query(
+        "CREATE TABLE IF NOT EXISTS tenants (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            name VARCHAR(255) NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )"
+    )
+    .execute(pool)
+    .await {
+        tracing::warn!("Could not create tenants table: {}", e);
+    }
+
+    // Step 2: Ensure users table exists
+    if let Err(e) = sqlx::query(
         "CREATE TABLE IF NOT EXISTS users (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -36,16 +49,17 @@ async fn seed_admin_user(pool: &sqlx::PgPool) {
         )"
     )
     .execute(pool)
-    .await
-    .ok();
+    .await {
+        tracing::warn!("Could not create users table: {}", e);
+    }
 
-    // Create index if not exists
+    // Step 3: Create index
     sqlx::query("CREATE INDEX IF NOT EXISTS idx_users_tenant_username ON users(tenant_id, username)")
         .execute(pool)
         .await
         .ok();
 
-    // Create default tenant if not exists
+    // Step 4: Create default tenant
     sqlx::query(
         "INSERT INTO tenants (id, name) VALUES ($1, 'Default Tenant') ON CONFLICT DO NOTHING"
     )
