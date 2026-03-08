@@ -63,6 +63,9 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
+      - name: Save build output
+        run: cp -r web-client/out /tmp/out
+
       - name: Checkout frontend-build branch
         run: |
           git fetch origin frontend-build || true
@@ -72,8 +75,8 @@ jobs:
         run: |
           rm -rf *
           rm -rf .[^.]*
-          cp -r web-client/out/* .
-          cp -r web-client/out/.* . 2>/dev/null || true
+          cp -r /tmp/out/* .
+          cp -r /tmp/out/.* . 2>/dev/null || true
 
       - name: Commit and push
         run: |
