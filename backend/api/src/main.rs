@@ -22,21 +22,6 @@ const DEFAULT_TENANT_ID: &str = "11111111-1111-1111-1111-111111111111";
 const DEFAULT_ADMIN_ID: &str = "11111111-1111-1111-1111-000000000001";
 
 async fn seed_admin_user(pool: &sqlx::PgPool) {
-    // Check if admin user exists
-    let exists = sqlx::query_scalar::<_, bool>(
-        "SELECT EXISTS(SELECT 1 FROM users WHERE username = 'admin' AND tenant_id = $1)"
-    )
-    .bind(DEFAULT_TENANT_ID)
-    .fetch_one(pool)
-    .await
-    .ok()
-    .unwrap_or(false);
-
-    if exists {
-        tracing::info!("Admin user already exists");
-        return;
-    }
-
     // Create default tenant if not exists
     sqlx::query(
         "INSERT INTO tenants (id, name) VALUES ($1, 'Default Tenant') ON CONFLICT DO NOTHING"
@@ -50,9 +35,11 @@ async fn seed_admin_user(pool: &sqlx::PgPool) {
     let password_hash = hash("admin123", DEFAULT_COST)
         .unwrap_or_else(|_| "".to_string());
 
-    // Create admin user
+    // Upsert admin user — always update password_hash to ensure it's valid bcrypt
     let result = sqlx::query(
-        "INSERT INTO users (id, tenant_id, username, password_hash, role) VALUES ($1, $2, 'admin', $3, 'ADMIN') ON CONFLICT DO NOTHING"
+        "INSERT INTO users (id, tenant_id, username, password_hash, role) \
+         VALUES ($1, $2, 'admin', $3, 'ADMIN') \
+         ON CONFLICT (tenant_id, username) DO UPDATE SET password_hash = $3, updated_at = NOW()"
     )
     .bind(DEFAULT_ADMIN_ID)
     .bind(DEFAULT_TENANT_ID)
@@ -61,7 +48,7 @@ async fn seed_admin_user(pool: &sqlx::PgPool) {
     .await;
 
     match result {
-        Ok(_) => tracing::info!("✅ Admin user created (admin/admin123)"),
+        Ok(_) => tracing::info!("✅ Admin user created/updated (admin/admin123)"),
         Err(e) => tracing::warn!("Could not create admin user: {}", e),
     }
 }
