@@ -15,13 +15,7 @@ use tower_http::cors::{CorsLayer, AllowOrigin};
 use tower_http::limit::RequestBodyLimitLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use state::AppState;
-use argon2::{
-    password_hash::{
-        rand_core::OsRng,
-        PasswordHasher,
-    },
-    Argon2,
-};
+use bcrypt::{hash, DEFAULT_COST};
 use uuid::Uuid;
 
 const DEFAULT_TENANT_ID: &str = "11111111-1111-1111-1111-111111111111";
@@ -52,12 +46,8 @@ async fn seed_admin_user(pool: &sqlx::PgPool) {
     .await
     .ok();
 
-    // Generate password hash for "admin123"
-    let argon2 = Argon2::default();
-    let salt = argon2::password_hash::SaltString::generate(&mut OsRng);
-    let password_hash = argon2
-        .hash_password(b"admin123", &salt)
-        .map(|h| h.to_string())
+    // Generate bcrypt hash for "admin123"
+    let password_hash = hash("admin123", DEFAULT_COST)
         .unwrap_or_else(|_| "".to_string());
 
     // Create admin user

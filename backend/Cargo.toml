@@ -25,6 +25,6 @@ tower = "0.4"
 tower-http = { version = "0.5", features = ["cors", "trace", "limit"] }
 validator = { version = "0.16", features = ["derive"] }
 async-trait = "0.1"
-argon2 = { version = "0.5", features = ["std"] }
+bcrypt = "0.15"
 jsonwebtoken = "9.2"
 rand = "0.8"

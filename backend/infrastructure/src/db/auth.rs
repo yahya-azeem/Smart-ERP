@@ -5,13 +5,7 @@ use smart_erp_core::models::auth::{
 use smart_erp_core::error::Error;
 use sqlx::PgPool;
 use uuid::Uuid;
-use argon2::{
-    password_hash::{
-        rand_core::OsRng,
-        PasswordHash, PasswordHasher, PasswordVerifier, SaltString
-    },
-    Argon2
-};
+use bcrypt::{hash, verify, DEFAULT_COST};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use chrono::{Utc, Duration};
 
@@ -33,12 +27,8 @@ impl AuthService for PostgresAuthRepository {
         tenant_id: Uuid,
         req: RegisterRequest,
     ) -> Result<User, Error> {
-        let salt = SaltString::generate(&mut OsRng);
-        let argon2 = Argon2::default();
-        let password_hash = argon2
-            .hash_password(req.password.as_bytes(), &salt)
-            .map_err(|e| Error::Validation(e.to_string()))?
-            .to_string();
+        let password_hash = hash(req.password.as_bytes(), DEFAULT_COST)
+            .map_err(|e| Error::Validation(e.to_string()))?;
 
         let user = sqlx::query_as::<_, User>(
             r#"
@@ -75,12 +65,10 @@ impl AuthService for PostgresAuthRepository {
         .map_err(|e| Error::Database(e.to_string()))?
         .ok_or(Error::Unauthorized)?;
 
-        let parsed_hash = PasswordHash::new(&user.password_hash)
-            .map_err(|_| Error::Unauthorized)?;
-        
-        Argon2::default()
-            .verify_password(req.password.as_bytes(), &parsed_hash)
-            .map_err(|_| Error::Unauthorized)?;
+        if !verify(req.password.as_bytes(), &user.password_hash)
+            .map_err(|_| Error::Unauthorized)? {
+            return Err(Error::Unauthorized);
+        }
 
         let expiration = Utc::now()
             .checked_add_signed(Duration::hours(24))
