@@ -65,9 +65,11 @@ impl AuthService for PostgresAuthRepository {
         .map_err(|e| Error::Database(e.to_string()))?
         .ok_or(Error::Unauthorized)?;
 
-        if !verify(&req.password, &user.password_hash)
-            .map_err(|_| Error::Unauthorized)? {
-            return Err(Error::Unauthorized);
+        // Debug: expose bcrypt errors temporarily
+        let verified = verify(&req.password, &user.password_hash)
+            .map_err(|e| Error::Database(format!("bcrypt verify error: {} (hash_len={})", e, user.password_hash.len())))?;
+        if !verified {
+            return Err(Error::Database(format!("password mismatch for user_id={}", user.id)));
         }
 
         let expiration = Utc::now()
