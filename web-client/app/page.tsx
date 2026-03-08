@@ -250,25 +250,29 @@ function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       const res = await fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-tenant-id': '11111111-1111-1111-1111-111111111111'
+        },
         body: JSON.stringify({ username, password }),
       });
-      
+
       if (res.ok) {
         const data = await res.json();
         login(data.token, data.user);
       } else {
-        setError('Invalid credentials');
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || 'Invalid credentials');
       }
     } catch (err) {
       setError('Connection error. Please try again.');
     }
-    
+
     setLoading(false);
   };
 
