@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const apiClient = axios.create({
-  baseURL: '/api', // CVE-13: Use relative URL via nginx proxy (no hardcoded port)
+  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api', // Fallback to /api for local dev if not set
   headers: {
     'Content-Type': 'application/json',
     // Default tenant for login (unauthenticated requests need a tenant context).
@@ -23,8 +23,8 @@ export function setTenantFromToken(token: string) {
 }
 
 apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  (response: any) => response,
+  (error: any) => {
     console.error('API Error:', error.response?.data || error.message);
     return Promise.reject(error);
   }

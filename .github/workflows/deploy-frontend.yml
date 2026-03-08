@@ -55,7 +55,7 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_API_URL: ${{ steps.api-url.outputs.api_url }}
-          NEXT_PUBLIC_BASE_PATH: ''
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
           CI: false
 
       - name: Setup Git config
