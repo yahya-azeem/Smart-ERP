@@ -20,7 +20,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // CVE-06: Use sessionStorage instead of localStorage to reduce XSS exposure
   // Token is not persisted across browser restarts, reducing the theft window
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(sessionStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(
+    typeof window !== 'undefined' ? sessionStorage.getItem('token') : null
+  );
 
   useEffect(() => {
     if (token) {
