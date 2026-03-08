@@ -9,7 +9,7 @@ on:
 env:
   REGION: us-central1
   SERVICE_NAME: smart-erp-api
-  IMAGE_NAME: us-central1-docker.pkg.dev/wide-ratio-423022-e8/smart-erp-api
+  IMAGE_NAME: us-central1-docker.pkg.dev/wide-ratio-423022-e8/smart-erp-api/backend
 
 jobs:
   deploy-api:
