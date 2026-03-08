@@ -48,7 +48,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: web-client
-        run: npm install
+        run: npm install --force
 
       - name: Build Next.js static site
         working-directory: web-client
