@@ -27,7 +27,7 @@ impl AuthService for PostgresAuthRepository {
         tenant_id: Uuid,
         req: RegisterRequest,
     ) -> Result<User, Error> {
-        let password_hash = hash(req.password.as_bytes(), DEFAULT_COST)
+        let password_hash = hash(&req.password, DEFAULT_COST)
             .map_err(|e| Error::Validation(e.to_string()))?;
 
         let user = sqlx::query_as::<_, User>(
@@ -65,7 +65,7 @@ impl AuthService for PostgresAuthRepository {
         .map_err(|e| Error::Database(e.to_string()))?
         .ok_or(Error::Unauthorized)?;
 
-        if !verify(req.password.as_bytes(), &user.password_hash)
+        if !verify(&req.password, &user.password_hash)
             .map_err(|_| Error::Unauthorized)? {
             return Err(Error::Unauthorized);
         }
