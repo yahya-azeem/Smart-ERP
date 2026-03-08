@@ -35,8 +35,8 @@
   ],
   "exclude": [
     "node_modules",
-    "src/main.tsx",
-    "src/App.tsx",
-    "src/pages"
+    ".next",
+    "out",
+    "src"
   ]
 }
