@@ -22,6 +22,29 @@ const DEFAULT_TENANT_ID: &str = "11111111-1111-1111-1111-111111111111";
 const DEFAULT_ADMIN_ID: &str = "11111111-1111-1111-1111-000000000001";
 
 async fn seed_admin_user(pool: &sqlx::PgPool) {
+    // Ensure users table exists
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS users (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+            username VARCHAR(255) NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            role VARCHAR(50) NOT NULL DEFAULT 'USER',
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            UNIQUE(tenant_id, username)
+        )"
+    )
+    .execute(pool)
+    .await
+    .ok();
+
+    // Create index if not exists
+    sqlx::query("CREATE INDEX IF NOT EXISTS idx_users_tenant_username ON users(tenant_id, username)")
+        .execute(pool)
+        .await
+        .ok();
+
     // Create default tenant if not exists
     sqlx::query(
         "INSERT INTO tenants (id, name) VALUES ($1, 'Default Tenant') ON CONFLICT DO NOTHING"
