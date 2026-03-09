@@ -1,3 +1,4 @@
+'use client';
 import { SimpleGrid, Paper, Title, Text, Group, ThemeIcon, Card, Center, Stack, Table, Badge } from '@mantine/core';
 import { IconArrowRight, IconShoppingCart, IconTruck, IconFileInvoice, IconCoin, IconReportAnalytics } from '@tabler/icons-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -58,7 +59,7 @@ export function Dashboard() {
 
   return (
     <div style={{ padding: 20 }}>
-      <Title order={2} mb="lg">Executive Dashboard</Title>
+      <Title order={2} mb="lg">Executive Dashboard v2</Title>
 
       {/* KPI Cards */}
       <SimpleGrid cols={5} mb="xl">
