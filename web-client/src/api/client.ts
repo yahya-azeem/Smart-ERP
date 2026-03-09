@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api', // Fallback to /api for local dev if not set
+  baseURL: `${process.env.NEXT_PUBLIC_API_URL || ''}/api`,
   headers: {
     'Content-Type': 'application/json',
     // Default tenant for login (unauthenticated requests need a tenant context).

@@ -1,0 +1,26 @@
+name: Seed Database
+
+on:
+  workflow_dispatch:
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: web-client
+        run: npm install pg --no-save
+
+      - name: Execute seeding script
+        working-directory: web-client
+        run: node seed_db.js
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
