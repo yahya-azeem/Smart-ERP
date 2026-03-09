@@ -1,13 +1,21 @@
 import axios from 'axios';
 
 export const apiClient = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_URL || ''}/api`,
+  baseURL: process.env.NEXT_PUBLIC_API_URL || '',
   headers: {
     'Content-Type': 'application/json',
     // Default tenant for login (unauthenticated requests need a tenant context).
     // After login, setTenantFromToken() updates this from the JWT payload.
     'x-tenant-id': '11111111-1111-1111-1111-111111111111',
   },
+});
+
+// Prepend /api to all requests if not present
+apiClient.interceptors.request.use((config) => {
+  if (config.url && !config.url.startsWith('/api') && !config.url.startsWith('http')) {
+    config.url = `/api${config.url.startsWith('/') ? '' : '/'}${config.url}`;
+  }
+  return config;
 });
 
 // Dynamically set tenant-id from JWT claims when token is available

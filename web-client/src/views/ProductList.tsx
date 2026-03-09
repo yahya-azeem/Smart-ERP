@@ -1,3 +1,4 @@
+'use client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createColumnHelper } from '@tanstack/react-table';
 import { apiClient } from '../api/client';
@@ -49,8 +50,8 @@ export function ProductList() {
       description: '',
     },
     validate: {
-        name: (value) => (value.length < 2 ? 'Name must have at least 2 letters' : null),
-        sku: (value) => (value.length < 2 ? 'SKU must have at least 2 letters' : null),
+      name: (value) => (value.length < 2 ? 'Name must have at least 2 letters' : null),
+      sku: (value) => (value.length < 2 ? 'SKU must have at least 2 letters' : null),
     },
   });
 
@@ -69,11 +70,11 @@ export function ProductList() {
       form.reset();
     },
     onError: (error: any) => {
-        notifications.show({
-            title: 'Error',
-            message: error.response?.data?.error || 'Failed to create product',
-            color: 'red',
-        });
+      notifications.show({
+        title: 'Error',
+        message: error.response?.data?.error || 'Failed to create product',
+        color: 'red',
+      });
     }
   });
 
@@ -85,29 +86,29 @@ export function ProductList() {
         <Title order={3}>Item List</Title>
         <Button onClick={open}>New Item</Button>
       </Group>
-      
+
       <div style={{ flex: 1, overflow: 'auto' }}>
         <DenseTable data={products || []} columns={columns} />
       </div>
 
       <Modal opened={opened} onClose={close} title="New Item">
         <form onSubmit={form.onSubmit((values) => mutation.mutate(values))}>
-            <Stack>
-                <TextInput label="Item Name" required {...form.getInputProps('name')} />
-                <TextInput label="SKU / Part Number" required {...form.getInputProps('sku')} />
-                <Select 
-                    label="Unit of Measure" 
-                    data={['UNIT', 'SQ_FT', 'KG', 'PIECE', 'METER', 'LITER']} 
-                    {...form.getInputProps('unit_of_measure')} 
-                />
-                <NumberInput label="Sales Price" prefix="$" {...form.getInputProps('price')} />
-                <NumberInput label="Cost" prefix="$" {...form.getInputProps('cost_price')} />
-                <TextInput label="Description" {...form.getInputProps('description')} />
-                <Group justify="flex-end" mt="md">
-                    <Button variant="default" onClick={close}>Cancel</Button>
-                    <Button type="submit" loading={mutation.isPending}>Save Item</Button>
-                </Group>
-            </Stack>
+          <Stack>
+            <TextInput label="Item Name" required {...form.getInputProps('name')} />
+            <TextInput label="SKU / Part Number" required {...form.getInputProps('sku')} />
+            <Select
+              label="Unit of Measure"
+              data={['UNIT', 'SQ_FT', 'KG', 'PIECE', 'METER', 'LITER']}
+              {...form.getInputProps('unit_of_measure')}
+            />
+            <NumberInput label="Sales Price" prefix="$" {...form.getInputProps('price')} />
+            <NumberInput label="Cost" prefix="$" {...form.getInputProps('cost_price')} />
+            <TextInput label="Description" {...form.getInputProps('description')} />
+            <Group justify="flex-end" mt="md">
+              <Button variant="default" onClick={close}>Cancel</Button>
+              <Button type="submit" loading={mutation.isPending}>Save Item</Button>
+            </Group>
+          </Stack>
         </form>
       </Modal>
     </div>

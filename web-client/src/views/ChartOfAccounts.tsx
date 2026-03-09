@@ -1,3 +1,4 @@
+'use client';
 import { Title, Table, Paper, Group, Text, Badge, SimpleGrid, Card, ThemeIcon, TextInput, Select, Button, Modal, Stack } from '@mantine/core';
 import { IconListDetails, IconPlus, IconSearch, IconTrash } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';

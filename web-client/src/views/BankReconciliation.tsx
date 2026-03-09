@@ -1,3 +1,4 @@
+'use client';
 import { Title, Table, Paper, Group, Text, Badge, SimpleGrid, Card, ThemeIcon, Select } from '@mantine/core';
 import { IconBuildingBank, IconCheck, IconX, IconArrowsTransferDown } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';

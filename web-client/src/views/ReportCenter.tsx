@@ -1,3 +1,4 @@
+'use client';
 import { Title, Paper, Group, Text, Badge, SimpleGrid, Card, ThemeIcon, Table, Tabs, Loader, Center } from '@mantine/core';
 import { IconChartBar, IconReportAnalytics, IconCoin, IconScale, IconUsers, IconBuildingStore } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
