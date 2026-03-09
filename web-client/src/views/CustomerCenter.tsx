@@ -2,7 +2,6 @@
 import { Grid, Paper, Title, Text, Group, ScrollArea, Table, Button, TextInput, Avatar, Stack, Badge, Modal, SimpleGrid, Card, ThemeIcon } from '@mantine/core';
 import { useState } from 'react';
 import { IconSearch, IconPlus, IconPhone, IconMail, IconMapPin, IconUsers } from '@tabler/icons-react';
-'use client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { useWindowManager } from '../context/WindowManagerContext';
